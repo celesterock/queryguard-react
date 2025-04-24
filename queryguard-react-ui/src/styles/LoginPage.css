@@ -1,0 +1,85 @@
+.login-page-body {
+    background: linear-gradient(90deg, #1e3a8a 50%, #f5f7fa 50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-size: cover;
+    background-image: url('https://img.freepik.com/free-photo/person-working-html-computer_23-2150038856.jpg?t=st=1743725450~exp=1743729050~hmac=1f01738815abb510bff4beae1b1a13cf808cf1ba570fc3ceae85f225c4e37909&w=996');
+    background-position: right center;
+    background-repeat: no-repeat;
+  }
+  
+  .login-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .login-header {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #333;
+  }
+  
+  .input-group {
+    margin-bottom: 20px;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #444;
+  }
+  
+  input[type="email"],
+  input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: border 0.3s;
+  }
+  
+  input:focus {
+    outline: none;
+    border-color: #5a67d8;
+  }
+  
+  .forgot-password {
+    display: block;
+    text-align: right;
+    font-size: 0.9rem;
+    margin-top: -10px;
+    margin-bottom: 20px;
+    color: #5a67d8;
+    text-decoration: none;
+  }
+  
+  .forgot-password:hover {
+    text-decoration: underline;
+  }
+  
+  .proceed-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    background-color: #5a67d8;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  .proceed-btn:hover {
+    background-color: #434190;
+  }
+  
