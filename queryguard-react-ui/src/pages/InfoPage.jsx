@@ -19,6 +19,7 @@ export default function InfoPage() {
         <h2>Secure Your Web Applications with AI</h2>
         <p>Real-time website analytics meets AI-powered SQL injection detection.</p>
         <Link to="/login" className="button">Log In</Link>
+	<Link to="/register" className="button">Create Account</Link>
       </section>
 
       <section id="features" className="features">

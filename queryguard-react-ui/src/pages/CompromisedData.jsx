@@ -1,18 +1,19 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import '../styles/QueryGuardDashboard.css';
 
-export default function CommonInjections() {
-  const data = ["' OR '1'='1 (85%)", 'UNION SELECT (10%)', 'DROP TABLE (5%)'];
+export default function CompromisedDataSources() {
+  const items = ['Database A', 'Customer Table', 'Employee Records'];
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-4">Compromised Data Sources</h1>
-      <ul className="list-disc ml-6 space-y-2">
-        {data.map((item, idx) => (
-          <li key={idx}>{item}</li>
+    <div className="card">
+      <h1 className="card-title">Compromised Data Sources</h1>
+      <ul className="card-list">
+        {items.map((src, idx) => (
+          <li key={idx}>{src}</li>
         ))}
       </ul>
-      <Link to="/" className="text-blue-500 underline mt-4 block">Back to Dashboard</Link>
+      <Link to="/" className="card-link">Back to Dashboard</Link>
     </div>
   );
 }
