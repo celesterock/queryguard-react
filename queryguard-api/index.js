@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const app = express();
 const pool = require('./db');
+const axios = require('axios');
 
 const PORT = process.env.PORT || 3000;
 
@@ -101,14 +102,74 @@ app.post('/register', async (req, res) => {
   }
 });
 
+app.post('/api/analyze', async (req, res) => {
+    const logData = req.body;
+
+    const userQuery = logData.body?.query || null;
+    const pagePath = logData.endpoint || 'unknown';
+    let userIp = logData.ip?.replace(/^::ffff:/, '') || null;
+
+    if (!userQuery) {
+        return res.status(400).json({ error: 'No query provided in log data' });
+    }
+
+    // If the endpoint is /api/analyze or /analyze, treat it as unknown
+    const normalizedPagePath = (pagePath === '/api/analyze' || pagePath === '/analyze') 
+        ? 'unknown' 
+        : pagePath;
+
+    try {
+        const userResult = await pool.query(
+            'SELECT id FROM users WHERE registered_ip = $1 LIMIT 1',
+            [userIp]
+        );
+
+        const userId = userResult.rows.length > 0 ? userResult.rows[0].id : null;
+
+        const response = await axios.post('http://localhost:8000/predict', {
+            query: userQuery
+        });
+
+        const prediction = response.data.prediction;
+
+        const insertQuery = `
+            INSERT INTO logs (method, endpoint, ip, timestamp, request_body, user_id, prediction)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `;
+
+        const requestBodyJson = JSON.stringify(logData.body);
+
+        await pool.query(insertQuery, [
+            logData.method || 'UNKNOWN',
+            normalizedPagePath,
+            userIp,
+            logData.timestamp || new Date().toISOString(),
+            requestBodyJson,
+            userId,
+            prediction
+        ]);
+
+        console.log(`Logged query for user ${userId} with prediction ${prediction} from page ${normalizedPagePath}`);
+
+        res.json({ prediction: prediction });
+
+    } catch (error) {
+        console.error('Error:', error.message);
+        res.status(500).json({ error: 'Model prediction or logging failed' });
+    }
+});
+
+
 
 // All other routes should serve the frontend (SPA routing)
 app.get('/*', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
-
-// Start server
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
 });
+
+
+
+
