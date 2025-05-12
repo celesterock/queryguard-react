@@ -1,167 +1,265 @@
 const express = require('express');
 const path = require('path');
+const session = require('express-session');
 const app = express();
 const pool = require('./db');
 const axios = require('axios');
 
 const PORT = process.env.PORT || 3000;
 
-// Parse JSON from incoming requests
 app.use(express.json());
 
-// Serve static files from React build output
+app.use(session({
+  secret: 'queryguard-secret-key',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } // secure: true for HTTPS
+}));
+
 const distPath = path.resolve(__dirname, '../queryguard-react-ui/dist');
 app.use(express.static(distPath));
 
-// API route for log middleware
-app.post('/log', async (req, res) => {
-  const { method, endpoint, ip, timestamp, body } = req.body;
-
-  try {
-    // Look up user_id based on registered IP
-    const result = await pool.query(
-      'SELECT id FROM users WHERE registered_ip = $1',
-      [ip]
-    );
-
-    if (result.rows.length === 0) {
-      console.warn(`No matching user found for IP: ${ip}`);
-      return res.status(400).json({ message: 'No matching user for IP' });
-    }
-
-    const user_id = result.rows[0].id;
-
-    const insertQuery = `
-      INSERT INTO logs (method, endpoint, ip, timestamp, request_body, user_id)
-      VALUES ($1, $2, $3, $4, $5, $6)
-    `;
-
-    const values = [method, endpoint, ip, timestamp, body, user_id];
-    await pool.query(insertQuery, values);
-
-    console.log(`Log inserted for user_id ${user_id}`);
-    res.status(200).json({ message: 'Log stored successfully' });
-
-  } catch (err) {
-    console.error('Error handling /log:', err.message);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-
-
+// LOGIN: Sets session
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
-
   try {
     const result = await pool.query(
-      'SELECT * FROM users WHERE username = $1 AND password = $2',
+      'SELECT id FROM users WHERE username = $1 AND password = $2',
       [username, password]
     );
-
     if (result.rows.length > 0) {
-      console.log(`User ${username} logged in successfully.`);
+      const user = result.rows[0];
+      req.session.user_id = user.id;
       res.status(200).json({ message: 'Login successful' });
     } else {
-      console.log(`Failed login attempt for ${username}.`);
       res.status(401).json({ message: 'Invalid username or password' });
     }
-
   } catch (err) {
-    console.error('Error during login:', err.message);
+    console.error('Login error:', err.message);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
+// REGISTER
 app.post('/register', async (req, res) => {
   const { username, password, registered_ip } = req.body;
-
   try {
-    // Check if username already exists
-    const checkUser = await pool.query(
-      'SELECT * FROM users WHERE username = $1',
-      [username]
-    );
+    const exists = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+    if (exists.rows.length > 0) return res.status(409).json({ message: 'Username exists' });
 
-    if (checkUser.rows.length > 0) {
-      return res.status(409).json({ message: 'Username already exists' });
-    }
-
-    // Insert new user
     await pool.query(
       'INSERT INTO users (username, password, registered_ip) VALUES ($1, $2, $3)',
       [username, password, registered_ip]
     );
-
-    console.log(`New user created: ${username}`);
     res.status(201).json({ message: 'Account created successfully' });
-
   } catch (err) {
-    console.error('Error creating account:', err.message);
+    console.error('Register error:', err.message);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-app.post('/api/analyze', async (req, res) => {
-    const logData = req.body;
+app.post('/log', async (req, res) => {
+  const { method, endpoint, ip: clientIp, timestamp, body, headers } = req.body;
 
-    const userQuery = logData.body?.query || null;
-    const pagePath = logData.endpoint || 'unknown';
-    let userIp = logData.ip?.replace(/^::ffff:/, '') || null;
+  try {
+    // Extract suspicious query input
+    const userQuery =
+      body?.query ||
+      body?.username ||
+      body?.password ||
+      endpoint?.split('?')[1] ||
+      '';
 
-    if (!userQuery) {
-        return res.status(400).json({ error: 'No query provided in log data' });
+    // Try to find the user by matching the sender's IP address
+    const senderIp = req.ip?.startsWith('::ffff:') ? req.ip.replace('::ffff:', '') : req.ip;
+    const userResult = await pool.query(
+      'SELECT id FROM users WHERE registered_ip = $1 LIMIT 1',
+      [senderIp]
+    );
+
+    if (userResult.rows.length === 0) {
+      console.warn(`No matching user found for sender IP: ${senderIp}`);
+      return res.status(400).json({ message: 'No matching user for sender IP' });
     }
 
-    // If the endpoint is /api/analyze or /analyze, treat it as unknown
-    const normalizedPagePath = (pagePath === '/api/analyze' || pagePath === '/analyze') 
-        ? 'unknown' 
-        : pagePath;
+    const userId = userResult.rows[0].id;
 
-    try {
-        const userResult = await pool.query(
-            'SELECT id FROM users WHERE registered_ip = $1 LIMIT 1',
-            [userIp]
-        );
-
-        const userId = userResult.rows.length > 0 ? userResult.rows[0].id : null;
-
-        const response = await axios.post('http://localhost:8000/predict', {
-            query: userQuery
-        });
-
-        const prediction = response.data.prediction;
-
-        const insertQuery = `
-            INSERT INTO logs (method, endpoint, ip, timestamp, request_body, user_id, prediction)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
-        `;
-
-        const requestBodyJson = JSON.stringify(logData.body);
-
-        await pool.query(insertQuery, [
-            logData.method || 'UNKNOWN',
-            normalizedPagePath,
-            userIp,
-            logData.timestamp || new Date().toISOString(),
-            requestBodyJson,
-            userId,
-            prediction
-        ]);
-
-        console.log(`Logged query for user ${userId} with prediction ${prediction} from page ${normalizedPagePath}`);
-
-        res.json({ prediction: prediction });
-
-    } catch (error) {
-        console.error('Error:', error.message);
-        res.status(500).json({ error: 'Model prediction or logging failed' });
+    // Run prediction via model
+    let prediction = 'unknown';
+    if (userQuery) {
+      const response = await axios.post('http://localhost:8000/predict', {
+        query: userQuery
+      });
+      prediction = response.data.prediction;
     }
+
+    // Store log with prediction
+    const insertQuery = `
+      INSERT INTO logs (method, endpoint, ip, timestamp, request_body, user_id, prediction)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `;
+    await pool.query(insertQuery, [
+      method || 'UNKNOWN',
+      endpoint || 'unknown',
+      clientIp || 'unknown',
+      timestamp || new Date().toISOString(),
+      JSON.stringify(body || {}),
+      userId,
+      prediction
+    ]);
+
+    console.log(`Log inserted for user ${userId} (IP ${senderIp}) → Prediction: ${prediction}`);
+    res.status(200).json({ message: 'Log stored successfully', prediction });
+
+  } catch (err) {
+    console.error('Error in /log:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+// DASHBOARD API: Only for logged-in user
+function requireLogin(req, res, next) {
+  if (!req.session.user_id) {
+    return res.status(401).json({ message: 'Not logged in' });
+  }
+  next();
+}
+
+// Common Injections
+app.get('/api/common-injections', requireLogin, async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT request_body, COUNT(*) AS count, MAX(timestamp) AS latest_time
+      FROM logs
+      WHERE prediction = 1 AND user_id = $1
+      GROUP BY request_body
+      ORDER BY count DESC, latest_time DESC
+      LIMIT 10
+    `, [req.session.user_id]);
+
+    res.json(rows.map(row => ({
+      injection: row.request_body,
+      count: parseInt(row.count),
+      latest_time: row.latest_time,
+    })));
+  } catch (err) {
+    console.error('common-injections error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.get('/api/recent-injections', requireLogin, async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT request_body, timestamp
+      FROM logs
+      WHERE prediction = 1 AND user_id = $1
+      ORDER BY timestamp DESC
+      LIMIT 20
+    `, [req.session.user_id]);
+
+    res.json(rows.map(row => ({
+      injection: typeof row.request_body === 'string'
+        ? row.request_body
+        : JSON.stringify(row.request_body), // 🛠 force stringify if it's an object
+      timestamp: row.timestamp,
+    })));
+  } catch (err) {
+    console.error('Error in /api/recent-injections:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
 
 
-// All other routes should serve the frontend (SPA routing)
+// Most Recent IPs
+app.get('/api/most-recent-ips', requireLogin, async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT ip
+      FROM (
+        SELECT ip, MAX(timestamp) AS latest_time
+        FROM logs
+        WHERE user_id = $1
+        GROUP BY ip
+      ) AS recent_ips
+      ORDER BY latest_time DESC
+      LIMIT 10;
+    `, [req.session.user_id]);
+
+    res.json(rows.map(row => row.ip));
+  } catch (err) {
+    console.error('most-recent-ips error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+app.get('/api/top-attacked-endpoints', requireLogin, async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT
+        SPLIT_PART(endpoint, '?', 1) AS normalized_endpoint,
+        COUNT(*) AS count
+      FROM logs
+      WHERE prediction = 1 AND user_id = $1
+      GROUP BY normalized_endpoint
+      ORDER BY count DESC
+      LIMIT 10
+    `, [req.session.user_id]);
+
+    res.json(rows.map(row => ({
+      endpoint: row.normalized_endpoint,
+      count: parseInt(row.count)
+    })));
+  } catch (err) {
+    console.error('Error in /api/top-attacked-endpoints:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.get('/api/logs-by-ip', requireLogin, async (req, res) => {
+  const ip = req.query.ip;
+
+  try {
+    const { rows } = await pool.query(`
+      SELECT request_body, method, endpoint, timestamp
+      FROM logs
+      WHERE user_id = $1 AND ip = $2 AND prediction = 1
+      ORDER BY timestamp DESC
+      LIMIT 50
+    `, [req.session.user_id, ip]);
+
+    res.json(rows);
+  } catch (err) {
+    console.error('Error in /api/logs-by-ip:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.get('/api/logs-by-endpoint', requireLogin, async (req, res) => {
+  const endpoint = req.query.path;
+
+  try {
+    const { rows } = await pool.query(`
+      SELECT request_body, method, timestamp
+      FROM logs
+      WHERE user_id = $1 AND SPLIT_PART(endpoint, '?', 1) = $2 AND prediction = 1
+      ORDER BY timestamp DESC
+      LIMIT 50
+    `, [req.session.user_id, endpoint]);
+
+    res.json(rows);
+  } catch (err) {
+    console.error('Error in /api/logs-by-endpoint:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+
+// Serve React App
 app.get('/*', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
@@ -169,7 +267,3 @@ app.get('/*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
 });
-
-
-
-

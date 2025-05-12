@@ -1,20 +1,76 @@
 // src/components/QueryGuardDashboard.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '../assets/logo.png';
 import continentsMap from '../assets/continents.png';
 import '../styles/QueryGuardDashboard.css';
 
-const cardData = [
-  { title: 'Most Recent IP Addresses',    items: ['192.168.0.1', '203.0.113.42', '10.0.0.2'],    link: '/ip-details' },
-  { title: 'Most Recent SQL Injections',  items: ["' OR '1'='1", 'DROP TABLE users;', '-- Comment'], link: '/recent-injections' },
-  { title: 'Most Common SQL Injections',  items: ["' OR '1'='1 (85%)", 'UNION SELECT (10%)', 'DROP TABLE (5%)'], link: '/common-injections' },
-  { title: 'Suspicious Account Names',    items: ['admin_test', 'sql_h4ck3r', 'guest123'],           link: '/suspicious-accounts' },
-  { title: 'Compromised Account Names',   items: ['user123', 'foo_bar', 'test_account'],             link: '/compromised-accounts' },
-  { title: 'Compromised Data Sources',    items: ['Database A', 'Customer Table', 'Employee Records'], link: '/data-sources' },
-];
-
 export default function QueryGuardDashboard() {
+  const [data, setData] = useState({
+    common: [],
+    recent: [],
+    ips: [],
+    endpoints: []
+  });
+
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    Promise.all([
+      fetch('http://3.149.254.38:3000/api/common-injections', { credentials: 'include' }).then(res => res.json()),
+      fetch('http://3.149.254.38:3000/api/recent-injections', { credentials: 'include' }).then(res => res.json()),
+      fetch('http://3.149.254.38:3000/api/most-recent-ips', { credentials: 'include' }).then(res => res.json()),
+      fetch('http://3.149.254.38:3000/api/top-attacked-endpoints', { credentials: 'include' }).then(res => res.json()),
+    ])
+      .then(([common, recent, ips, endpoints]) => {
+        setData({
+          common: common.slice(0,5).map(row => {
+            const body = typeof row.injection === 'string'
+              ? row.injection
+              : JSON.stringify(row.injection);
+            return `${body} (${row.count})`;
+          }),
+          recent: recent.slice(0,5).map(row => row.injection), // show all
+          ips: ips.slice(0,5),
+	  endpoints: endpoints.slice(0, 5).map(row => ({
+		label: `${row.endpoint} (${row.count})`,
+		raw: row.endpoint
+	  }))
+        });
+      })
+      .catch((err) => {
+        console.error('Dashboard data load failed:', err);
+        setError('Failed to load dashboard data.');
+      });
+  }, []);
+
+  const dynamicCards = [
+    {
+      title: 'Most Recent IP Addresses',
+      items: data.ips,
+      link: '/ip-details',
+    },
+    {
+      title: 'Most Recent SQL Injections',
+      items: data.recent,
+      link: '/recent-injections',
+    },
+    {
+      title: 'Most Common SQL Injections',
+      items: data.common,
+      link: '/common-injections',
+    },
+    {
+      title: 'Top Attacked Endpoints',
+      items: data.endpoints.map((item) => (
+       <Link to={`/endpoint/${encodeURIComponent(item.raw)}`}>
+          {item.label}
+        </Link>
+      )),
+      link: '/endpoint-details'	
+    },
+  ];
+
   const [tooltip, setTooltip] = useState({
     visible: false,
     text: '',
@@ -37,40 +93,31 @@ export default function QueryGuardDashboard() {
 
   return (
     <div>
-      {/* Header with large logo above centered title */}
+      {/* Header with logo */}
       <div className="dashboard-header">
-        <img
-          src={logo}
-          alt="QueryGuard Logo"
-          className="dashboard-logo"
-        />
+        <img src={logo} alt="QueryGuard Logo" className="dashboard-logo" />
       </div>
+
       {/* Grid wrapper for all cards */}
       <div className="cards-container">
-        {/* Standard data cards */}
-        {cardData.map(card => (
+        {dynamicCards.map(card => (
           <div key={card.title} className="card">
             <h2 className="card-title">{card.title}</h2>
             <ul className="card-list">
-              {card.items.map(item => (
-                <li key={item}>{item}</li>
+              {card.items.map((item, index) => (
+                <li key={index}>{item}</li>
               ))}
             </ul>
-            <Link to={card.link} className="card-link">
-              View More
-            </Link>
+	    {card.title !== 'Top Attacked Endpoints' && (
+                <Link to={card.link} className="card-link">View More</Link>
+	    )}
           </div>
         ))}
 
         {/* Geographical Overview card */}
         <div className="card geo-card">
-          <h2 className="card-title">
-            Geographical Overview
-          </h2>
-          <div
-            className="geo-container"
-            onMouseOut={hideTooltip}
-          >
+          <h2 className="card-title">Geographical Overview</h2>
+          <div className="geo-container" onMouseOut={hideTooltip}>
             <img
               src={continentsMap}
               alt="7 Continents Map"

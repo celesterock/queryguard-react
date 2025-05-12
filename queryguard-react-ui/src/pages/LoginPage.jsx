@@ -4,8 +4,6 @@ import '../styles/LoginPage.css';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-
-  // New: State for user input
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -19,18 +17,19 @@ export default function LoginPage() {
         headers: {
           'Content-Type': 'application/json'
         },
+        credentials: 'include', // ✅ important to store session cookie
         body: JSON.stringify({ username: email, password: password })
       });
 
       if (response.ok) {
-        console.log(' Login successful!');
-        navigate('/portal');
+        console.log('✅ Login successful! Session established.');
+        navigate('/portal'); // or navigate('/dashboard') if that’s the main view
       } else {
-        console.log(' Login failed.');
+        console.warn('❌ Login failed.');
         setError('Invalid username or password.');
       }
     } catch (err) {
-      console.error(' Error logging in:', err.message);
+      console.error('Error logging in:', err.message);
       setError('Server error. Please try again.');
     }
   };
@@ -72,3 +71,4 @@ export default function LoginPage() {
     </div>
   );
 }
+
