@@ -1,20 +1,40 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/QueryGuardDashboard.css';
 
-export default function IPDetails() {
-  const items = ['192.168.0.1', '203.0.113.42', '10.0.0.2'];
+export default function MostRecentIP() {
+  const [ips, setIps] = useState([]);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetch('http://3.142.55.88:3000/api/most-recent-ips')
+      .then((res) => {
+        if (!res.ok) throw new Error(`Status: ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        console.log("Fetched IPs:", data);
+        const filtered = [...new Set(
+          data.filter(ip => ip && !ip.startsWith('::'))
+        )];
+        setIps(filtered);
+      })
+      .catch((err) => {
+        console.error('Error fetching recent IPs:', err);
+        setError('Failed to load data');
+      });
+  }, []);
 
   return (
     <div className="card">
       <h1 className="card-title">Most Recent IP Addresses</h1>
+      {error && <p className="text-red-500">{error}</p>}
       <ul className="card-list">
-        {items.map((ip, idx) => (
+        {ips.map((ip, idx) => (
           <li key={idx}>{ip}</li>
         ))}
       </ul>
-      <Link to="/" className="card-link">Back to Dashboard</Link>
+      <Link to="/dashboard" className="card-link">Back to Dashboard</Link>
     </div>
   );
 }
-
