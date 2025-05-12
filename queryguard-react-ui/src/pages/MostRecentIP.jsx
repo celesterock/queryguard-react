@@ -36,7 +36,9 @@ export default function MostRecentIP() {
         <ul className="card-list">
           {ips.map((ip, idx) => (
             <li key={idx}>
-              <span role="img" aria-label="ip"></span> {ip}
+	      <Link to={`/ip/${encodeURIComponent(ip)}`}>
+                  <span role="img" aria-label="ip"></span> {ip}
+              </Link>
             </li>
           ))}
         </ul>

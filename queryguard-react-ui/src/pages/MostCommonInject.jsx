@@ -7,7 +7,7 @@ export default function CommonInjections() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('http://3.142.55.88:3000/api/common-injections')
+    fetch('http://3.149.254.38:3000/api/common-injections')
       .then((res) => {
         if (!res.ok) {
           throw new Error(`HTTP error! Status: ${res.status}`);

@@ -32,7 +32,10 @@ export default function QueryGuardDashboard() {
           }),
           recent: recent.slice(0,5).map(row => row.injection), // show all
           ips: ips.slice(0,5),
-          endpoints: endpoints.slice(0,5).map(row => `${row.endpoint} (${row.count})`)
+	  endpoints: endpoints.slice(0, 5).map(row => ({
+		label: `${row.endpoint} (${row.count})`,
+		raw: row.endpoint
+	  }))
         });
       })
       .catch((err) => {
@@ -59,8 +62,12 @@ export default function QueryGuardDashboard() {
     },
     {
       title: 'Top Attacked Endpoints',
-      items: data.endpoints,
-      link: '/endpoint-details'
+      items: data.endpoints.map((item) => (
+       <Link to={`/endpoint/${encodeURIComponent(item.raw)}`}>
+          {item.label}
+        </Link>
+      )),
+      link: '/endpoint-details'	
     },
   ];
 
@@ -97,11 +104,13 @@ export default function QueryGuardDashboard() {
           <div key={card.title} className="card">
             <h2 className="card-title">{card.title}</h2>
             <ul className="card-list">
-              {card.items.map(item => (
-                <li key={item}>{item}</li>
+              {card.items.map((item, index) => (
+                <li key={index}>{item}</li>
               ))}
             </ul>
-            <Link to={card.link} className="card-link">View More</Link>
+	    {card.title !== 'Top Attacked Endpoints' && (
+                <Link to={card.link} className="card-link">View More</Link>
+	    )}
           </div>
         ))}
 

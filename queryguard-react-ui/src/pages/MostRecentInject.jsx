@@ -7,7 +7,7 @@ export default function MostRecentInject() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('http://3.142.55.88:3000/api/recent-injections')
+    fetch('http://3.149.254.38:3000/api/recent-injections')
       .then((res) => {
         if (!res.ok) throw new Error(`Status: ${res.status}`);
         return res.json();

@@ -219,6 +219,45 @@ app.get('/api/top-attacked-endpoints', requireLogin, async (req, res) => {
   }
 });
 
+app.get('/api/logs-by-ip', requireLogin, async (req, res) => {
+  const ip = req.query.ip;
+
+  try {
+    const { rows } = await pool.query(`
+      SELECT request_body, method, endpoint, timestamp
+      FROM logs
+      WHERE user_id = $1 AND ip = $2 AND prediction = 1
+      ORDER BY timestamp DESC
+      LIMIT 50
+    `, [req.session.user_id, ip]);
+
+    res.json(rows);
+  } catch (err) {
+    console.error('Error in /api/logs-by-ip:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.get('/api/logs-by-endpoint', requireLogin, async (req, res) => {
+  const endpoint = req.query.path;
+
+  try {
+    const { rows } = await pool.query(`
+      SELECT request_body, method, timestamp
+      FROM logs
+      WHERE user_id = $1 AND SPLIT_PART(endpoint, '?', 1) = $2 AND prediction = 1
+      ORDER BY timestamp DESC
+      LIMIT 50
+    `, [req.session.user_id, endpoint]);
+
+    res.json(rows);
+  } catch (err) {
+    console.error('Error in /api/logs-by-endpoint:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
 
 // Serve React App
 app.get('/*', (req, res) => {

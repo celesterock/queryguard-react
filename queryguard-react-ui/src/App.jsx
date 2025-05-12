@@ -10,7 +10,8 @@ import MostRecentIP from './pages/MostRecentIP';
 import CompromisedAccounts from './pages/CompromisedAccounts';
 import CompromisedData from './pages/CompromisedData';
 import SuspiciousAccounts from './pages/SuspiciousAccounts';
-
+import IpLogsPage from './pages/IpLogsPage';
+import EndpointLogsPage from './pages/EndpointLogsPage';
 
 function App() {
   return (
@@ -27,6 +28,8 @@ function App() {
 	<Route path="/suspicious-accounts" element={<SuspiciousAccounts />} />
 	<Route path="/compromised-accounts" element={<CompromisedAccounts />} />
 	<Route path="/data-sources" element={<CompromisedData />} />
+	<Route path="/ip/:ipAddress" element={<IpLogsPage />} />
+	<Route path="/endpoint/:path" element={<EndpointLogsPage />} />
       </Routes>
     </Router>
   );
