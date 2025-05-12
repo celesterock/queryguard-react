@@ -95,3 +95,30 @@
   font-size: 0.875rem;
   transform: translate(-50%, -100%);
 }
+
+
+/* ---- View More Pages ---- */
+.viewmore-page {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 30px;
+}
+
+.viewmore-page h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.viewmore-page ul {
+  padding-left: 20px;
+  font-size: 1.1rem;
+}
+
+.viewmore-page li {
+  margin-bottom: 10px;
+}
+
+.viewmore-page .card-link {
+  display: inline-block;
+  margin-top: 30px;
+}

@@ -10,6 +10,7 @@ export default function QueryGuardDashboard() {
     common: [],
     recent: [],
     ips: [],
+    endpoints: []
   });
 
   const [error, setError] = useState(null);
@@ -19,17 +20,19 @@ export default function QueryGuardDashboard() {
       fetch('http://3.149.254.38:3000/api/common-injections', { credentials: 'include' }).then(res => res.json()),
       fetch('http://3.149.254.38:3000/api/recent-injections', { credentials: 'include' }).then(res => res.json()),
       fetch('http://3.149.254.38:3000/api/most-recent-ips', { credentials: 'include' }).then(res => res.json()),
+      fetch('http://3.149.254.38:3000/api/top-attacked-endpoints', { credentials: 'include' }).then(res => res.json()),
     ])
-      .then(([common, recent, ips]) => {
+      .then(([common, recent, ips, endpoints]) => {
         setData({
-          common: common.map(row => {
+          common: common.slice(0,5).map(row => {
             const body = typeof row.injection === 'string'
               ? row.injection
               : JSON.stringify(row.injection);
             return `${body} (${row.count})`;
           }),
-          recent: recent.map(row => row.injection), // ✅ show all, not sliced
-          ips: ips,
+          recent: recent.slice(0,5).map(row => row.injection), // show all
+          ips: ips.slice(0,5),
+          endpoints: endpoints.slice(0,5).map(row => `${row.endpoint} (${row.count})`)
         });
       })
       .catch((err) => {
@@ -53,6 +56,11 @@ export default function QueryGuardDashboard() {
       title: 'Most Common SQL Injections',
       items: data.common,
       link: '/common-injections',
+    },
+    {
+      title: 'Top Attacked Endpoints',
+      items: data.endpoints,
+      link: '/endpoint-details'
     },
   ];
 

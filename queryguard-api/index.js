@@ -19,7 +19,7 @@ app.use(session({
 const distPath = path.resolve(__dirname, '../queryguard-react-ui/dist');
 app.use(express.static(distPath));
 
-// ✅ LOGIN: Sets session
+// LOGIN: Sets session
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -40,7 +40,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// ✅ REGISTER
+// REGISTER
 app.post('/register', async (req, res) => {
   const { username, password, registered_ip } = req.body;
   try {
@@ -108,17 +108,17 @@ app.post('/log', async (req, res) => {
       prediction
     ]);
 
-    console.log(`✅ Log inserted for user ${userId} (IP ${senderIp}) → Prediction: ${prediction}`);
+    console.log(`Log inserted for user ${userId} (IP ${senderIp}) → Prediction: ${prediction}`);
     res.status(200).json({ message: 'Log stored successfully', prediction });
 
   } catch (err) {
-    console.error('❌ Error in /log:', err.message);
+    console.error('Error in /log:', err.message);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
 
-// ✅ DASHBOARD API: Only fetch data for logged-in user
+// DASHBOARD API: Only for logged-in user
 function requireLogin(req, res, next) {
   if (!req.session.user_id) {
     return res.status(401).json({ message: 'Not logged in' });
@@ -195,11 +195,36 @@ app.get('/api/most-recent-ips', requireLogin, async (req, res) => {
   }
 });
 
+
+app.get('/api/top-attacked-endpoints', requireLogin, async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT
+        SPLIT_PART(endpoint, '?', 1) AS normalized_endpoint,
+        COUNT(*) AS count
+      FROM logs
+      WHERE prediction = 1 AND user_id = $1
+      GROUP BY normalized_endpoint
+      ORDER BY count DESC
+      LIMIT 10
+    `, [req.session.user_id]);
+
+    res.json(rows.map(row => ({
+      endpoint: row.normalized_endpoint,
+      count: parseInt(row.count)
+    })));
+  } catch (err) {
+    console.error('Error in /api/top-attacked-endpoints:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
 // Serve React App
 app.get('/*', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server is running at http://localhost:${PORT}`);
+  console.log(`Server is running at http://localhost:${PORT}`);
 });
