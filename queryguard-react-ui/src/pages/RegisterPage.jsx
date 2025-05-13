@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../styles/LoginPage.css';
 
 export default function RegisterPage() {
   const [username, setUsername] = useState('');
@@ -26,7 +27,7 @@ export default function RegisterPage() {
       if (response.ok) {
         setSuccess('Account created! You can now log in.');
         setError('');
-        setTimeout(() => navigate('/login'), 2000); // redirect after 2s
+        setTimeout(() => navigate('/login'), 2000);
       } else {
         const data = await response.json();
         setError(data.message || 'Registration failed.');
@@ -45,19 +46,40 @@ export default function RegisterPage() {
         <div className="login-header">Create a QueryGuard Account</div>
         <form onSubmit={handleRegister}>
           <div className="input-group">
-            <label>Username</label>
-            <input value={username} onChange={(e) => setUsername(e.target.value)} required />
+            <label htmlFor="username">Username</label>
+            <input
+              id="username"
+              type="text"
+              className="login-input"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
           </div>
           <div className="input-group">
-            <label>Password</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              className="login-input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </div>
           <div className="input-group">
-            <label>Server IP to Monitor</label>
-            <input value={serverIP} onChange={(e) => setServerIP(e.target.value)} required />
+            <label htmlFor="server-ip">Server IP to Monitor</label>
+            <input
+              id="server-ip"
+              type="text"
+              className="login-input"
+              value={serverIP}
+              onChange={(e) => setServerIP(e.target.value)}
+              required
+            />
           </div>
-          {error && <div style={{ color: 'red', marginTop: '10px' }}>{error}</div>}
-          {success && <div style={{ color: 'green', marginTop: '10px' }}>{success}</div>}
+          {error && <div className="error-message">{error}</div>}
+          {success && <div className="success-message">{success}</div>}
           <button type="submit" className="proceed-btn">Register</button>
         </form>
       </div>
