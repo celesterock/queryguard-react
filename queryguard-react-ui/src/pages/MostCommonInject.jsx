@@ -16,7 +16,10 @@ export default function CommonInjections() {
       })
       .then((data) => {
         const formatted = data.map((row) => {
-          const body = row.injection?.query || String(row.injection);
+          const body =
+            typeof row.injection === 'string'
+              ? row.injection
+              : JSON.stringify(row.injection);
           return `${body} (${row.count})`;
         });
         setItems(formatted);

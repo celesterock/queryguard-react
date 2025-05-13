@@ -1,9 +1,9 @@
-// src/components/QueryGuardDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '../assets/logo.png';
 import continentsMap from '../assets/continents.png';
 import '../styles/QueryGuardDashboard.css';
+import EndpointPieChart from './EndpointPieChart'; // ⬅️ new import
 
 export default function QueryGuardDashboard() {
   const [data, setData] = useState({
@@ -24,18 +24,18 @@ export default function QueryGuardDashboard() {
     ])
       .then(([common, recent, ips, endpoints]) => {
         setData({
-          common: common.slice(0,5).map(row => {
+          common: common.slice(0, 5).map(row => {
             const body = typeof row.injection === 'string'
               ? row.injection
               : JSON.stringify(row.injection);
             return `${body} (${row.count})`;
           }),
-          recent: recent.slice(0,5).map(row => row.injection), // show all
-          ips: ips.slice(0,5),
-	  endpoints: endpoints.slice(0, 5).map(row => ({
-		label: `${row.endpoint} (${row.count})`,
-		raw: row.endpoint
-	  }))
+          recent: recent.slice(0, 5).map(row => row.injection),
+          ips: ips.slice(0, 5),
+          endpoints: endpoints.slice(0, 5).map(row => ({
+            label: `${row.endpoint} (${row.count})`,
+            raw: row.endpoint
+          }))
         });
       })
       .catch((err) => {
@@ -63,11 +63,11 @@ export default function QueryGuardDashboard() {
     {
       title: 'Top Attacked Endpoints',
       items: data.endpoints.map((item) => (
-       <Link to={`/endpoint/${encodeURIComponent(item.raw)}`}>
+        <Link to={`/endpoint/${encodeURIComponent(item.raw)}`}>
           {item.label}
         </Link>
       )),
-      link: '/endpoint-details'	
+      link: '/endpoint-details'
     },
   ];
 
@@ -93,12 +93,10 @@ export default function QueryGuardDashboard() {
 
   return (
     <div>
-      {/* Header with logo */}
       <div className="dashboard-header">
         <img src={logo} alt="QueryGuard Logo" className="dashboard-logo" />
       </div>
 
-      {/* Grid wrapper for all cards */}
       <div className="cards-container">
         {dynamicCards.map(card => (
           <div key={card.title} className="card">
@@ -108,13 +106,17 @@ export default function QueryGuardDashboard() {
                 <li key={index}>{item}</li>
               ))}
             </ul>
-	    {card.title !== 'Top Attacked Endpoints' && (
-                <Link to={card.link} className="card-link">View More</Link>
-	    )}
+            {card.title !== 'Top Attacked Endpoints' && (
+              <Link to={card.link} className="card-link">View More</Link>
+            )}
           </div>
         ))}
 
-        {/* Geographical Overview card */}
+        <div className="card geo-card">
+          <h2 className="card-title">Targeted Website Endpoints</h2>
+          <EndpointPieChart data={data.endpoints} />
+        </div>
+
         <div className="card geo-card">
           <h2 className="card-title">Geographical Overview</h2>
           <div className="geo-container" onMouseOut={hideTooltip}>
