@@ -22,7 +22,7 @@ export default function IpLogsPage() {
 
   return (
     <div className="card viewmore-page">
-      <h1 className="card-title">🛡️ Logs from {ipAddress}</h1>
+      <h1 className="card-title">Logs from {ipAddress}</h1>
 
       {error && <p className="text-red-500">{error}</p>}
 
