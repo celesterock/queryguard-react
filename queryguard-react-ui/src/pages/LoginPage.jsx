@@ -4,7 +4,7 @@ import '../styles/LoginPage.css';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
@@ -17,13 +17,13 @@ export default function LoginPage() {
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include', // ✅ important to store session cookie
-        body: JSON.stringify({ username: email, password: password })
+        credentials: 'include',
+        body: JSON.stringify({ username, password })
       });
 
       if (response.ok) {
         console.log('✅ Login successful! Session established.');
-        navigate('/portal'); // or navigate('/dashboard') if that’s the main view
+        navigate('/portal');
       } else {
         console.warn('❌ Login failed.');
         setError('Invalid username or password.');
@@ -37,17 +37,18 @@ export default function LoginPage() {
   return (
     <div className="login-page-body">
       <div className="login-container">
-        <div className="login-header">Log in to Query Guard</div>
+        <h2 className="login-header">Log in to Query Guard</h2>
         <form onSubmit={handleLogin}>
           <div className="input-group">
-            <label htmlFor="email">Email address</label>
+            <label htmlFor="username">Username</label>
             <input
               type="text"
-              id="email"
-              name="email"
+              id="username"
+              name="username"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="login-input"
             />
           </div>
           <div className="input-group">
@@ -59,10 +60,11 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              className="login-input"
             />
           </div>
 
-          {error && <div style={{ color: 'red', marginTop: '10px' }}>{error}</div>}
+          {error && <div className="error-message">{error}</div>}
 
           <a href="#" className="forgot-password">Forgot password?</a>
           <button type="submit" className="proceed-btn">Proceed</button>
@@ -71,4 +73,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
