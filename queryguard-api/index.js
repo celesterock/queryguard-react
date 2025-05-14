@@ -58,20 +58,54 @@ app.post('/register', async (req, res) => {
   }
 });
 
+
+/**
+ * Normalize IP address format.
+ */
+function normalizeIp(ip) {
+  if (!ip) return 'unknown';
+  if (ip.startsWith('::ffff:')) return ip.replace('::ffff:', '');
+  if (ip === '::1') return '127.0.0.1';
+  return ip;
+}
+
+/**
+ * Parse request body and return the first field that the model flags as malicious.
+ * Returns { value, prediction } where prediction is 0 or 1.
+ */
+async function extractMaliciousField(body) {
+  if (!body || typeof body !== 'object') return { value: '', prediction: 0 };
+
+  for (const [key, value] of Object.entries(body)) {
+    if (typeof value === 'string' && value.trim() !== '') {
+      try {
+        const { data } = await axios.post('http://localhost:8000/predict', {
+          query: value,
+        });
+
+        const modelPrediction = data.prediction; // Expecting 0 or 1
+        if (modelPrediction === 1) {
+          return { value, prediction: 1 };
+        }
+      } catch (err) {
+        console.warn('Prediction error for field:', key, err.message);
+      }
+    }
+  }
+
+  return { value: '', prediction: 0 };
+}
+
+/**
+ * Log endpoint that receives web requests from client sites.
+ */
 app.post('/log', async (req, res) => {
-  const { method, endpoint, ip: clientIp, timestamp, body, headers } = req.body;
+  const { method, endpoint, ip: rawIp, timestamp, body, headers } = req.body;
 
   try {
-    // Extract suspicious query input
-    const userQuery =
-      body?.query ||
-      body?.username ||
-      body?.password ||
-      endpoint?.split('?')[1] ||
-      '';
+    const senderIp = normalizeIp(rawIp);
 
-    // Try to find the user by matching the sender's IP address
-    const senderIp = req.ip?.startsWith('::ffff:') ? req.ip.replace('::ffff:', '') : req.ip;
+    // Lookup user by IP
     const userResult = await pool.query(
       'SELECT id FROM users WHERE registered_ip = $1 LIMIT 1',
       [senderIp]
@@ -84,16 +118,10 @@ app.post('/log', async (req, res) => {
 
     const userId = userResult.rows[0].id;
 
-    // Run prediction via model
-    let prediction = 'unknown';
-    if (userQuery) {
-      const response = await axios.post('http://localhost:8000/predict', {
-        query: userQuery
-      });
-      prediction = response.data.prediction;
-    }
+    // Extract potential SQLi string and prediction
+    const { value: maliciousInput, prediction } = await extractMaliciousField(body);
 
-    // Store log with prediction
+    // Store the result (replacing full JSON with the suspicious string)
     const insertQuery = `
       INSERT INTO logs (method, endpoint, ip, timestamp, request_body, user_id, prediction)
       VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -101,9 +129,9 @@ app.post('/log', async (req, res) => {
     await pool.query(insertQuery, [
       method || 'UNKNOWN',
       endpoint || 'unknown',
-      clientIp || 'unknown',
+      senderIp,
       timestamp || new Date().toISOString(),
-      JSON.stringify(body || {}),
+      maliciousInput || '[no suspicious input detected]',
       userId,
       prediction
     ]);
