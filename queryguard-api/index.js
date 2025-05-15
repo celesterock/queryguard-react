@@ -100,28 +100,30 @@ async function extractMaliciousField(body) {
  * Log endpoint that receives web requests from client sites.
  */
 app.post('/log', async (req, res) => {
-  const { method, endpoint, ip: rawIp, timestamp, body, headers } = req.body;
+  const { method, endpoint, ip: userIpRaw, timestamp, body, headers } = req.body;
+
+  // Get client IP from the actual connection — this is the IP of the site sending the log
+  const clientIp = normalizeIp(req.headers['x-forwarded-for'] || req.socket.remoteAddress);
+  const userIp = normalizeIp(userIpRaw); // This is the end user’s IP that the site reported
 
   try {
-    const senderIp = normalizeIp(rawIp);
-
-    // Lookup user by IP
+    // Look up which user sent this based on their registered server IP
     const userResult = await pool.query(
       'SELECT id FROM users WHERE registered_ip = $1 LIMIT 1',
-      [senderIp]
+      [clientIp]
     );
 
     if (userResult.rows.length === 0) {
-      console.warn(`No matching user found for sender IP: ${senderIp}`);
+      console.warn(`No matching user found for sender IP: ${clientIp}`);
       return res.status(400).json({ message: 'No matching user for sender IP' });
     }
 
     const userId = userResult.rows[0].id;
 
-    // Extract potential SQLi string and prediction
+    // Run BERT model prediction on all fields in body
     const { value: maliciousInput, prediction } = await extractMaliciousField(body);
 
-    // Store the result (replacing full JSON with the suspicious string)
+    // Insert the log
     const insertQuery = `
       INSERT INTO logs (method, endpoint, ip, timestamp, request_body, user_id, prediction)
       VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -129,14 +131,14 @@ app.post('/log', async (req, res) => {
     await pool.query(insertQuery, [
       method || 'UNKNOWN',
       endpoint || 'unknown',
-      senderIp,
+      userIp || 'unknown', // this is the site visitor’s IP
       timestamp || new Date().toISOString(),
       maliciousInput || '[no suspicious input detected]',
       userId,
       prediction
     ]);
 
-    console.log(`Log inserted for user ${userId} (IP ${senderIp}) → Prediction: ${prediction}`);
+    console.log(`Log inserted for user ${userId} (Client IP ${clientIp}, Visitor IP ${userIp}) → Prediction: ${prediction}`);
     res.status(200).json({ message: 'Log stored successfully', prediction });
 
   } catch (err) {
