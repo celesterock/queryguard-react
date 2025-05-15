@@ -58,42 +58,72 @@ app.post('/register', async (req, res) => {
   }
 });
 
+
+/**
+ * Normalize IP address format.
+ */
+function normalizeIp(ip) {
+  if (!ip) return 'unknown';
+  if (ip.startsWith('::ffff:')) return ip.replace('::ffff:', '');
+  if (ip === '::1') return '127.0.0.1';
+  return ip;
+}
+
+/**
+ * Parse request body and return the first field that the model flags as malicious.
+ * Returns { value, prediction } where prediction is 0 or 1.
+ */
+async function extractMaliciousField(body) {
+  if (!body || typeof body !== 'object') return { value: '', prediction: 0 };
+
+  for (const [key, value] of Object.entries(body)) {
+    if (typeof value === 'string' && value.trim() !== '') {
+      try {
+        const { data } = await axios.post('http://localhost:8000/predict', {
+          query: value,
+        });
+
+        const modelPrediction = data.prediction; // Expecting 0 or 1
+        if (modelPrediction === 1) {
+          return { value, prediction: 1 };
+        }
+      } catch (err) {
+        console.warn('Prediction error for field:', key, err.message);
+      }
+    }
+  }
+
+  return { value: '', prediction: 0 };
+}
+
+/**
+ * Log endpoint that receives web requests from client sites.
+ */
 app.post('/log', async (req, res) => {
-  const { method, endpoint, ip: clientIp, timestamp, body, headers } = req.body;
+  const { method, endpoint, ip: userIpRaw, timestamp, body, headers } = req.body;
+
+  // Get client IP from the actual connection — this is the IP of the site sending the log
+  const clientIp = normalizeIp(req.headers['x-forwarded-for'] || req.socket.remoteAddress);
+  const userIp = normalizeIp(userIpRaw); // This is the end user’s IP that the site reported
 
   try {
-    // Extract suspicious query input
-    const userQuery =
-      body?.query ||
-      body?.username ||
-      body?.password ||
-      endpoint?.split('?')[1] ||
-      '';
-
-    // Try to find the user by matching the sender's IP address
-    const senderIp = req.ip?.startsWith('::ffff:') ? req.ip.replace('::ffff:', '') : req.ip;
+    // Look up which user sent this based on their registered server IP
     const userResult = await pool.query(
       'SELECT id FROM users WHERE registered_ip = $1 LIMIT 1',
-      [senderIp]
+      [clientIp]
     );
 
     if (userResult.rows.length === 0) {
-      console.warn(`No matching user found for sender IP: ${senderIp}`);
+      console.warn(`No matching user found for sender IP: ${clientIp}`);
       return res.status(400).json({ message: 'No matching user for sender IP' });
     }
 
     const userId = userResult.rows[0].id;
 
-    // Run prediction via model
-    let prediction = 'unknown';
-    if (userQuery) {
-      const response = await axios.post('http://localhost:8000/predict', {
-        query: userQuery
-      });
-      prediction = response.data.prediction;
-    }
+    // Run BERT model prediction on all fields in body
+    const { value: maliciousInput, prediction } = await extractMaliciousField(body);
 
-    // Store log with prediction
+    // Insert the log
     const insertQuery = `
       INSERT INTO logs (method, endpoint, ip, timestamp, request_body, user_id, prediction)
       VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -101,14 +131,14 @@ app.post('/log', async (req, res) => {
     await pool.query(insertQuery, [
       method || 'UNKNOWN',
       endpoint || 'unknown',
-      clientIp || 'unknown',
+      userIp || 'unknown', // this is the site visitor’s IP
       timestamp || new Date().toISOString(),
-      JSON.stringify(body || {}),
+      maliciousInput || '[no suspicious input detected]',
       userId,
       prediction
     ]);
 
-    console.log(`Log inserted for user ${userId} (IP ${senderIp}) → Prediction: ${prediction}`);
+    console.log(`Log inserted for user ${userId} (Client IP ${clientIp}, Visitor IP ${userIp}) → Prediction: ${prediction}`);
     res.status(200).json({ message: 'Log stored successfully', prediction });
 
   } catch (err) {

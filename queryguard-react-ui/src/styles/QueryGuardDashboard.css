@@ -1,107 +1,156 @@
-/* src/components/QueryGuardDashboard.css */
-
-/* New header wrapper to center both */
+/* ----- Dashboard Header ----- */
 .dashboard-header {
   text-align: center;
-  margin-bottom: 2rem;    /* space below header */
+  margin-bottom: 2rem;
 }
 
-/* Make logo bigger and block-center it */
 .dashboard-logo {
   display: block;
-  width: 10rem;            /* adjust up/down to taste */
+  width: 8rem;
   height: auto;
-  margin: 0 auto 1rem;    /* bottom gap before title */
+  margin: 0 auto 1rem;
 }
 
-/* Title styling below the logo */
-.dashboard-title {
-  color: #3182ce;
-  font-size: 2.5rem;      /* larger title */
-  margin: 0;
-}
-
-/* ---- Grid Layout ---- */
+/* ----- Grid Layout ----- */
 .cards-container {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-}
-@media (max-width: 1024px) {
-  .cards-container {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (max-width: 768px) {
-  .cards-container {
-    grid-template-columns: 1fr;
-  }
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  padding: 1rem 2rem;
 }
 
-/* ---- Card Styling ---- */
+/* ----- Card Styling ----- */
 .card {
-/*  background: #fff; BLOCKS CONTENT */
-  border: 1px solid #e2e8f0;
-  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-.card-title {
-  margin-bottom: 1rem;
-  font-size: 1.25rem;
-}
-.card-list {
-  margin: 0 0 1rem 1.25rem;
-}
-.card-list li {
-  margin-bottom: 0.5rem;
-}
-.card-link {
-  text-decoration: none;
-  color: #3182ce;
-  font-weight: 500;
+  backdrop-filter: blur(10px);
+  color: #fff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
-/* ---- Geo-map Card ---- */
-/* Ensure the geo-card spans the full grid width */
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #f7fafc;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* ----- Card List Styling ----- */
+.card-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.card-list li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;     /* Center pill links */
+  text-align: center;      /* Center plain text */
+  gap: 0.5rem;
+  padding: 0.6rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  max-width: 100%;
+}
+
+.card-list li:first-child {
+  border-top: none;
+}
+
+/* ----- Pill-Style Link Buttons Inside Card Lists ----- */
+.card-list a {
+  display: inline-block;
+  padding: 0.3rem 0.6rem;
+  margin-top: 0.3rem;
+  margin-bottom: 0.3rem;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #f7fafc;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease;
+}
+
+.card-list a:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+/* ----- View More Button Style ----- */
+.card-link {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  color: #63b3ed;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.card-link:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+/* ----- Geo Card (Full Width) ----- */
 .geo-card {
   grid-column: 1 / -1;
-}
-
-/* Let the image fill its container’s width */
-.geo-image {
-  display: block;     /* remove inline gaps */
-  width: 100%;        /* full width of the card */
-  height: auto;       /* maintain aspect ratio */
-  max-width: none;    /* override any inherited max-width */
-}
-
-/* (Optional) Remove padding on the geo-card if you want edge-to-edge image */
-.geo-card {
-  padding: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  color: #fff;
+  padding: 1rem;
 }
 
 .geo-container {
   position: relative;
 }
-.tooltip {
-  position: absolute;
-  background: rgba(0, 0, 0, 0.75);
-  color: #fff;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  pointer-events: none;
-  white-space: nowrap;
-  font-size: 0.875rem;
-  transform: translate(-50%, -100%);
+
+.geo-image {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
+/* ----- Tooltip ----- */
+.tooltip {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  pointer-events: none;
+  transform: translate(-50%, -120%);
+  z-index: 10;
+  white-space: nowrap;
+}
 
-/* ---- View More Pages ---- */
+/* ----- View More Pages ----- */
 .viewmore-page {
   max-width: 700px;
   margin: 40px auto;
   padding: 30px;
+  color: #edf2f7;
 }
 
 .viewmore-page h1 {
@@ -110,12 +159,15 @@
 }
 
 .viewmore-page ul {
-  padding-left: 20px;
+  padding-left: 0;
+  list-style: none;
   font-size: 1.1rem;
 }
 
 .viewmore-page li {
   margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 8px;
 }
 
 .viewmore-page .card-link {
