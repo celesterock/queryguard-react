@@ -330,6 +330,34 @@ app.get('/api/top-sqli-ips', requireLogin, async (req, res) => {
   }
 });
 
+// return sql injections by the hour
+app.get('/api/injections-by-hour', requireLogin, async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT EXTRACT(HOUR FROM timestamp) AS hour, COUNT(*) AS count
+      FROM logs
+      WHERE prediction = 1 AND user_id = $1
+      GROUP BY hour
+      ORDER BY hour
+    `, [req.session.user_id]);
+
+    // Format as time labels (e.g., "01:00–02:00")
+    const formatted = Array.from({ length: 24 }, (_, i) => {
+      const label = `${String(i).padStart(2, '0')}:00–${String((i + 1) % 24).padStart(2, '0')}:00`;
+      const found = rows.find(r => parseInt(r.hour) === i);
+      return {
+        timeRange: label,
+        count: found ? parseInt(found.count) : 0
+      };
+    });
+
+    res.json(formatted);
+  } catch (err) {
+    console.error('Error in /api/injections-by-hour:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 
 // Serve React App
 app.get('/*', (req, res) => {
