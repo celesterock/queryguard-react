@@ -5,7 +5,8 @@ import continentsMap from '../assets/continents.png';
 import '../styles/QueryGuardDashboard.css';
 import EndpointPieChart from './EndpointPieChart';
 import AttacksPerDayChart from './AttacksPerDayChart';
-import TopAttackerBarChart from './TopAttackerBarChart'; // ⬅️ NEW
+import TopAttackerBarChart from './TopAttackerBarChart';
+import AttacksByHourChart from './AttacksByHourChart'; // 🆕 New chart import
 
 export default function QueryGuardDashboard() {
   const [data, setData] = useState({
@@ -17,6 +18,7 @@ export default function QueryGuardDashboard() {
   });
 
   const [attacksPerDayData, setAttacksPerDayData] = useState([]);
+  const [attacksByHourData, setAttacksByHourData] = useState([]); // 🆕
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -25,7 +27,7 @@ export default function QueryGuardDashboard() {
       fetch('http://3.149.254.38:3000/api/recent-injections', { credentials: 'include' }).then(res => res.json()),
       fetch('http://3.149.254.38:3000/api/most-recent-ips', { credentials: 'include' }).then(res => res.json()),
       fetch('http://3.149.254.38:3000/api/top-attacked-endpoints', { credentials: 'include' }).then(res => res.json()),
-      fetch('http://3.149.254.38:3000/api/top-sqli-ips', { credentials: 'include' }).then(res => res.json()) // NEW
+      fetch('http://3.149.254.38:3000/api/top-sqli-ips', { credentials: 'include' }).then(res => res.json())
     ])
       .then(([common, recent, ips, endpoints, sqliIps]) => {
         setData({
@@ -62,9 +64,13 @@ export default function QueryGuardDashboard() {
 
         const attacksData = Object.entries(attacksByDay).map(([date, count]) => ({ date, count }));
         setAttacksPerDayData(attacksData);
-      })
+      });
+
+    fetch('http://3.149.254.38:3000/api/injections-by-hour', { credentials: 'include' })
+      .then(res => res.json())
+      .then(hourData => setAttacksByHourData(hourData))
       .catch(err => {
-        console.error('Error loading chart data:', err.message);
+        console.error('Error loading hourly data:', err.message);
       });
 
   }, []);
@@ -96,25 +102,12 @@ export default function QueryGuardDashboard() {
     },
   ];
 
-  const [tooltip, setTooltip] = useState({
-    visible: false,
-    text: '',
-    x: 0,
-    y: 0,
-  });
-
+  const [tooltip, setTooltip] = useState({ visible: false, text: '', x: 0, y: 0 });
   const showTooltip = (e, text) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    setTooltip({
-      visible: true,
-      text,
-      x: e.clientX - rect.left + 10,
-      y: e.clientY - rect.top + 10,
-    });
+    setTooltip({ visible: true, text, x: e.clientX - rect.left + 10, y: e.clientY - rect.top + 10 });
   };
-
-  const hideTooltip = () =>
-    setTooltip(t => ({ ...t, visible: false }));
+  const hideTooltip = () => setTooltip(t => ({ ...t, visible: false }));
 
   return (
     <div>
@@ -148,8 +141,13 @@ export default function QueryGuardDashboard() {
         </div>
 
         <div className="card geo-card">
-          <h2 className="card-title">Top SQL Injection Attempt Sources (by IP)</h2>
+          <h2 className="card-title">Top SQL Injection Sources</h2>
           <TopAttackerBarChart data={data.sqliIps} />
+        </div>
+
+        <div className="card geo-card">
+          <h2 className="card-title">SQLi Attempts by Time of Day</h2>
+          <AttacksByHourChart data={attacksByHourData} />
         </div>
 
         <div className="card geo-card">
