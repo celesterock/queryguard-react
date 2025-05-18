@@ -3,6 +3,42 @@ import { Link } from "react-router-dom";
 import logo from "../assets/logo.png";
 import "../styles/InfoPage.css";
 
+const steps = [
+  {
+    title: "Install Middleware",
+    description:
+      "Add QueryGuard to your web app with a simple package install and import.",
+  },
+  {
+    title: "Start Logging",
+    description:
+      "Capture requests in real-time which are automatically sent to  QueryGuard for analysis .",
+  },
+  {
+    title: "Analyze Threats",
+    description:
+      "Use your dashboard to explore potential SQL injection attempts.",
+  },
+];
+
+const pricingPlans = [
+  {
+    title: "Free",
+    description: "Basic logging and alerts",
+    price: "$0",
+  },
+  {
+    title: "Pro",
+    description: "Advanced analytics and ML detection",
+    price: "$15/mo",
+  },
+  {
+    title: "Enterprise",
+    description: "Custom integrations & priority support",
+    price: "Contact Us",
+  },
+];
+
 export default function InfoPage() {
   return (
     <div>
@@ -76,6 +112,33 @@ export default function InfoPage() {
           <div className="feature-card">
             <h4>Customizable Rules</h4>
             <p>Fine-tune settings to fit your security needs.</p>
+          </div>
+        </div>
+      </div>
+      <div id="features" className="features-section">
+        <h3>How It Works</h3>
+        <div className="features-grid">
+          <div className="feature-card">
+            {steps.map((step, idx) => (
+              <div className="card" key={idx}>
+                <h3>{step.title}</h3>
+                <p>{step.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div id="features" className="features-section">
+        <h3>Pricing</h3>
+        <div className="features-grid">
+          <div className="feature-card">
+            {pricingPlans.map((plan, idx) => (
+              <div className="card" key={idx}>
+                <h3>{plan.title}</h3>
+                <p>{plan.description}</p>
+                <p>{plan.price}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
