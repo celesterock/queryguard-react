@@ -1,13 +1,16 @@
-// src/pages/EndpointPieChart.jsx
 import React from 'react';
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+  PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
+import { useNavigate } from 'react-router-dom';
 
 const COLORS = ['#63b3ed', '#38a169', '#f6ad55', '#ed64a6', '#9f7aea'];
 
 export default function EndpointPieChart({ data }) {
-  // Extract numeric count values from formatted label
+  const navigate = useNavigate();
+
   const pieData = data.map(row => ({
-    name: row.raw,
+    name: row.raw, // raw endpoint path
     value: parseInt(row.label.match(/\((\d+)\)/)?.[1] || 0),
   }));
 
@@ -24,11 +27,16 @@ export default function EndpointPieChart({ data }) {
             label={({ name, percent }) =>
               `${name}: ${(percent * 100).toFixed(0)}%`
             }
+            onClick={(data, index) => {
+              const endpoint = pieData[index].name;
+              navigate(`/endpoint/${encodeURIComponent(endpoint)}`);
+            }}
           >
             {pieData.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}
                 fill={COLORS[index % COLORS.length]}
+                cursor="pointer"
               />
             ))}
           </Pie>

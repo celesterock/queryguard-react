@@ -287,6 +287,48 @@ app.get('/api/logs-by-endpoint', requireLogin, async (req, res) => {
   }
 });
 
+// endpoint for chart of injections per day
+app.get('/api/chart/injections-per-day', requireLogin, async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT timestamp, prediction
+      FROM logs
+      WHERE user_id = $1
+      ORDER BY timestamp DESC
+      LIMIT 200
+    `, [req.session.user_id]);
+
+    res.json(rows.map(row => ({
+      timestamp: row.timestamp,
+      prediction: Number(row.prediction)
+    })));
+  } catch (err) {
+    console.error('Error in /api/chart/injections-per-day:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Chart for top 10 most active attacking ips
+app.get('/api/top-sqli-ips', requireLogin, async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT ip, COUNT(*) AS count
+      FROM logs
+      WHERE prediction = 1 AND user_id = $1
+      GROUP BY ip
+      ORDER BY count DESC
+      LIMIT 10
+    `, [req.session.user_id]);
+
+    res.json(rows.map(row => ({
+      ip: row.ip,
+      count: parseInt(row.count)
+    })));
+  } catch (err) {
+    console.error('Error in /api/top-sqli-ips:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 
 // Serve React App
