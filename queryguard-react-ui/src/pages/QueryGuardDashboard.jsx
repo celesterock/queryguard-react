@@ -3,16 +3,20 @@ import { Link } from 'react-router-dom';
 import logo from '../assets/logo.png';
 import continentsMap from '../assets/continents.png';
 import '../styles/QueryGuardDashboard.css';
-import EndpointPieChart from './EndpointPieChart'; // ⬅️ new import
+import EndpointPieChart from './EndpointPieChart';
+import AttacksPerDayChart from './AttacksPerDayChart';
+import TopAttackerBarChart from './TopAttackerBarChart'; // ⬅️ NEW
 
 export default function QueryGuardDashboard() {
   const [data, setData] = useState({
     common: [],
     recent: [],
     ips: [],
-    endpoints: []
+    endpoints: [],
+    sqliIps: []
   });
 
+  const [attacksPerDayData, setAttacksPerDayData] = useState([]);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -21,8 +25,9 @@ export default function QueryGuardDashboard() {
       fetch('http://3.149.254.38:3000/api/recent-injections', { credentials: 'include' }).then(res => res.json()),
       fetch('http://3.149.254.38:3000/api/most-recent-ips', { credentials: 'include' }).then(res => res.json()),
       fetch('http://3.149.254.38:3000/api/top-attacked-endpoints', { credentials: 'include' }).then(res => res.json()),
+      fetch('http://3.149.254.38:3000/api/top-sqli-ips', { credentials: 'include' }).then(res => res.json()) // NEW
     ])
-      .then(([common, recent, ips, endpoints]) => {
+      .then(([common, recent, ips, endpoints, sqliIps]) => {
         setData({
           common: common.slice(0, 5).map(row => {
             const body = typeof row.injection === 'string'
@@ -35,13 +40,33 @@ export default function QueryGuardDashboard() {
           endpoints: endpoints.slice(0, 5).map(row => ({
             label: `${row.endpoint} (${row.count})`,
             raw: row.endpoint
-          }))
+          })),
+          sqliIps: sqliIps || []
         });
       })
       .catch((err) => {
         console.error('Dashboard data load failed:', err);
         setError('Failed to load dashboard data.');
       });
+
+    fetch('http://3.149.254.38:3000/api/chart/injections-per-day', { credentials: 'include' })
+      .then(res => res.json())
+      .then(chartLogs => {
+        const attacksByDay = {};
+        chartLogs.forEach(row => {
+          if (Number(row.prediction) === 1) {
+            const day = new Date(row.timestamp).toISOString().split('T')[0];
+            attacksByDay[day] = (attacksByDay[day] || 0) + 1;
+          }
+        });
+
+        const attacksData = Object.entries(attacksByDay).map(([date, count]) => ({ date, count }));
+        setAttacksPerDayData(attacksData);
+      })
+      .catch(err => {
+        console.error('Error loading chart data:', err.message);
+      });
+
   }, []);
 
   const dynamicCards = [
@@ -115,6 +140,16 @@ export default function QueryGuardDashboard() {
         <div className="card geo-card">
           <h2 className="card-title">Targeted Website Endpoints</h2>
           <EndpointPieChart data={data.endpoints} />
+        </div>
+
+        <div className="card geo-card">
+          <h2 className="card-title">Attack Attempt Analytics</h2>
+          <AttacksPerDayChart data={attacksPerDayData} />
+        </div>
+
+        <div className="card geo-card">
+          <h2 className="card-title">Top SQL Injection Attempt Sources (by IP)</h2>
+          <TopAttackerBarChart data={data.sqliIps} />
         </div>
 
         <div className="card geo-card">
