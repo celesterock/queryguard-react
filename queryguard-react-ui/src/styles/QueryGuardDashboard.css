@@ -12,6 +12,87 @@
   margin: 0 auto 1rem;
 }
 
+/* ----- Analytics Cards Container ----- */
+.analytics-cards-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.analytics-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  max-width: 1200px;
+  width: 100%;
+}
+
+/* ----- Individual Analytics Card Styling ----- */
+.analytics-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+  color: #fff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.analytics-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+.analytics-card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #f7fafc;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.analytics-card-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-grow: 1;
+}
+
+.analytics-card-list li {
+  display: block;
+  text-align: center;
+  padding: 0.6rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.analytics-card-list li:first-child {
+  border-top: none;
+}
+
+.analytics-card-link {
+  display: inline-block;
+  margin-top: 1rem;
+  align-self: center;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  color: #63b3ed;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.analytics-card-link:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
 /* ----- Grid Layout ----- */
 .cards-container {
   display: grid;
@@ -55,8 +136,8 @@
 .card-list li {
   display: flex;
   flex-direction: column;
-  align-items: center;     /* Center pill links */
-  text-align: center;      /* Center plain text */
+  align-items: center; /* Center pill links */
+  text-align: center; /* Center plain text */
   gap: 0.5rem;
   padding: 0.6rem 0;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
