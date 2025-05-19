@@ -136,51 +136,64 @@ export default function InfoPage() {
       </div>
 
       <div id="about" className="features-section">
-        <h2> What Sets us Apart? </h2>
-        <h3> Not Just Another Security Scanner </h3>
-        <div className="features-grid">
-          <div className="feature-card">
-            {aboutus.map((plan, idx) => (
-              <div className="card" key={idx}>
-                <h3>{plan.title}</h3>
-                <p>{plan.description}</p>
-                {/* <p>{plan.img}</p> */}
-              </div>
-            ))}
-          </div>
+        <h3> What Sets us Apart? </h3>
+        <h2> Not Just Another Security Scanner </h2>
+        <div className="features-grid-about">
+          {aboutus.slice(0, 3).map((plan, idx) => (
+            <div className="feature-card" key={idx}>
+              <h3>{plan.title}</h3>
+              <p>{plan.description}</p>
+            </div>
+          ))}
+        </div>
+        <div
+          className="features-grid-about"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "24px",
+            marginTop: "24px",
+          }}
+        >
+          {aboutus.slice(3).map((plan, idx) => (
+            <div className="feature-card" key={idx}>
+              <h3>{plan.title}</h3>
+              <p>{plan.description}</p>
+            </div>
+          ))}
         </div>
       </div>
 
       <div id="features" className="features-section">
         <h3>Features</h3>
-        <div className="features-grid">
+        <div className="features-grid-features">
           <div className="feature-card">
-            <h4>ML-Powered Detection</h4>
+            <h3>ML-Powered Detection</h3>
             <p>Advanced AI models detect SQL injection threats in real-time.</p>
             {/* ML-image(gear working) */}
           </div>
           <div className="feature-card">
-            <h4>Real-Time Analytics</h4>
+            <h3>Real-Time Analytics</h3>
             <p>Monitor visitor logs and suspicious activities instantly.</p>
             {/* clock image */}
           </div>
           <div className="feature-card">
-            <h4>Easy API Integration</h4>
+            <h3>Easy API Integration</h3>
             <p>Supports custom log formats.</p>
             {/* api image */}
           </div>
           <div className="feature-card">
-            <h4>Lightning Fast</h4>
+            <h3>Lightning Fast</h3>
             <p>Optimized for speed without affecting site performance.</p>
             {/* some image */}
           </div>
           <div className="feature-card">
-            <h4>Instant Alerts</h4>
+            <h3>Instant Alerts</h3>
             <p>Get notified of potential SQLi attacks immediately.</p>
             {/* alerts image */}
           </div>
           <div className="feature-card">
-            <h4>Customizable Rules</h4>
+            <h3>Customizable Rules</h3>
             <p>Fine-tune settings to fit your security needs.</p>
             {/* some image */}
           </div>
@@ -189,38 +202,34 @@ export default function InfoPage() {
       <div id="how-it-works" className="features-section">
         <h3>How It Works</h3>
         <div className="features-grid">
-          <div className="feature-card">
-            {steps.map((step, idx) => (
-              <div className="card" key={idx}>
-                <h3>{step.title}</h3>
-                <p>{step.description}</p>
-              </div>
-            ))}
-          </div>
+          {steps.map((step, idx) => (
+            <div className="feature-card" key={idx}>
+              <h3>{step.title}</h3>
+              <p>{step.description}</p>
+            </div>
+          ))}
         </div>
       </div>
       <div id="pricing" className="features-section">
         <h3>Pricing</h3>
         <div className="features-grid">
-          <div className="feature-card">
-            {pricingPlans.map((plan, idx) => (
-              <div className="card" key={idx}>
-                <h3>{plan.title}</h3>
-                <p>{plan.description}</p>
-                <p>{plan.price}</p>
-              </div>
-            ))}
-          </div>
+          {pricingPlans.map((plan, idx) => (
+            <div className="feature-card" key={idx}>
+              <h3>{plan.title}</h3>
+              <p>{plan.description}</p>
+              <p>{plan.price}</p>
+            </div>
+          ))}
         </div>
       </div>
       <div id="contact" className="features-section">
         <h3>Contact Us</h3>
         <div className="features-grid">
           <div className="feature-card">
-            <p className="text-gray-300 mb-2">Email: support@queryguard.io</p>
+            <p className="text-gray-300 mb-2">Email: support@qg.com</p>
             <p className="text-gray-300 mb-2">Phone: +1 (555) 123-4567</p>
             <p className="text-gray-300">
-              Address: 123 Cyber Lane, Secure City, CA
+              Address: University of California Irvine, CA
             </p>
           </div>
         </div>
