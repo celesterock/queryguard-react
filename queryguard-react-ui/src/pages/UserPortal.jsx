@@ -8,7 +8,10 @@ export default function UserPortal() {
   return (
     <div className="user-portal-body">
       <header>
-        <h1>QueryGuard</h1>
+        <div className="header-logo">
+          <h1>QueryGuard</h1>
+          <img src={logo} alt="QueryGuard Logo" className="h-10 w-auto" />
+        </div>
         <nav>
           <a href="#dashboard">Dashboard</a>
           <a href="#tutorials">Tutorials</a>
