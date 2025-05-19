@@ -12,11 +12,10 @@
   margin: 0 auto 1rem;
 }
 
-/* ----- Cards Container ----- */
+/* ----- Grid Layout ----- */
 .cards-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 2rem;
   padding: 1rem 2rem;
 }
@@ -31,13 +30,6 @@
   color: #fff;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-  flex: 1 1 280px;
-  max-width: 400px;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
 }
 
 .card:hover {
@@ -58,27 +50,50 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  flex-grow: 1;
 }
 
 .card-list li {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center pill links */
+  text-align: center; /* Center plain text */
+  gap: 0.5rem;
   padding: 0.6rem 0;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   color: #e2e8f0;
-  word-break: break-word;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
   white-space: pre-wrap;
+  max-width: 100%;
 }
 
 .card-list li:first-child {
   border-top: none;
 }
 
+/* ----- Pill-Style Link Buttons Inside Card Lists ----- */
+.card-list a {
+  display: inline-block;
+  padding: 0.3rem 0.6rem;
+  margin-top: 0.3rem;
+  margin-bottom: 0.3rem;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #f7fafc;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease;
+}
+
+.card-list a:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
 /* ----- View More Button Style ----- */
 .card-link {
   display: inline-block;
   margin-top: 1rem;
-  align-self: center;
   padding: 0.4rem 0.8rem;
   font-size: 0.9rem;
   color: #63b3ed;
