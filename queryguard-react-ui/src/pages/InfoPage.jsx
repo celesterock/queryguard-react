@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import logo from "../assets/logo.png";
+import logo_white from "../assets/logo_white.png";
 import "../styles/InfoPage.css";
 import { Typewriter } from "react-simple-typewriter";
 
@@ -114,7 +114,11 @@ export default function InfoPage() {
             </p>
           </div>
           <div className="hero-image flex items-center space-x-4">
-            <img src={logo} alt="QueryGuard Logo" className="h-10 w-auto" />
+            <img
+              src={logo_white}
+              alt="QueryGuard Logo"
+              className="h-10 w-auto"
+            />
             <h2 className="text-white text-lg font-semibold">
               <Typewriter
                 words={[
