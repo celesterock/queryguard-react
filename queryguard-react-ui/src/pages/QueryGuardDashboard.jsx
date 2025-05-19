@@ -142,21 +142,25 @@ export default function QueryGuardDashboard() {
       </div>
 
       <div className="cards-container">
-        {dynamicCards.map((card) => (
-          <div key={card.title} className="card">
-            <h2 className="card-title">{card.title}</h2>
-            <ul className="card-list">
-              {card.items.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-            {card.title !== "Top Attacked Endpoints" && (
-              <Link to={card.link} className="card-link">
-                View More
-              </Link>
-            )}
+        <div className="analytics-cards-wrapper">
+          <div className="analytics-cards">
+            {dynamicCards.map((card) => (
+              <div key={card.title} className="analytics-card">
+                <h2 className="analytics-card-title">{card.title}</h2>
+                <ul className="analytics-card-list">
+                  {card.items.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+                {card.title !== "Top Attacked Endpoints" && (
+                  <Link to={card.link} className="analytics-card-link">
+                    View More
+                  </Link>
+                )}
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
 
         <div className="card geo-card">
           <h2 className="card-title">Targeted Website Endpoints</h2>
