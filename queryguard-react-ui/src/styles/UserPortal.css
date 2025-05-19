@@ -20,17 +20,6 @@ header h1 {
   font-size: 40px;
 }
 
-.header-logo {
-  display: flex;
-  align-items: center;
-  gap: 1rem; /* space between title and image */
-}
-
-.header-logo img {
-  width: 5rem;
-  height: auto;
-}
-
 nav a {
   color: white;
   margin: 0 10px;
@@ -61,7 +50,7 @@ nav a:hover {
 }
 
 .card h3 {
-  color: #5a90a2;
+  color: #ecc94b;
   font-size: 24px;
 }
 
