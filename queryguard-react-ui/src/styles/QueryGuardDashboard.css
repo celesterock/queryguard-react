@@ -54,8 +54,8 @@
 .card-list li {
   display: flex;
   flex-direction: column;
-  align-items: center;     /* Center pill links */
-  text-align: center;      /* Center plain text */
+  align-items: center; /* Center pill links */
+  text-align: center; /* Center plain text */
   gap: 0.5rem;
   padding: 0.6rem 0;
   border-top: 1px solid rgba(255, 255, 255, 0.1);

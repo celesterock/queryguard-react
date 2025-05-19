@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import logo from "../assets/logo.png";
 import "../styles/InfoPage.css";
+import { Typewriter } from "react-simple-typewriter";
 
 const steps = [
   {
@@ -21,6 +22,35 @@ const steps = [
   },
 ];
 
+// add images to each of these
+const aboutus = [
+  {
+    title: "BERT-Based ML Detection",
+    description:
+      "QueryGuard uses the latest in natural language processing to enable us to catch obfuscated or unconventional attacks other tools miss.",
+  },
+  {
+    title: "Real-Time Analytics Dashboard",
+    description:
+      "QueryGuard’s live dashboard gives users and admins clear visibility into who, when, and how attacks are attempted.",
+  },
+  {
+    title: "Plug-and-Play Architecture",
+    description:
+      " No code rewrites, no deep integrations. Hosting platforms can deploy QueryGuard via a simple and package.",
+  },
+  {
+    title: "Designed for Integration",
+    description:
+      "Whether as an add-on, bundled feature, or part of a custom tier, it adapts to your business model—not the other way around.",
+  },
+  {
+    title: "Focused on Value, Not Complexity.",
+    description:
+      "We skip the jargon, steep learning curves, and bloated UIs. What’s left is a clean, modern solution that works quietly in the background",
+  },
+];
+
 const pricingPlans = [
   {
     title: "Free",
@@ -35,7 +65,7 @@ const pricingPlans = [
   {
     title: "Enterprise",
     description: "Custom integrations & priority support",
-    price: "Contact Us",
+    price: "TBD",
   },
 ];
 
@@ -52,9 +82,11 @@ export default function InfoPage() {
       <header>
         <h1>QueryGuard</h1>
         <nav>
+          <a href="#about"> About Us </a>
           <a href="#features">Features </a>
           <a href="#how-it-works">How It Works </a>
           <a href="#pricing">Pricing</a>
+          <a href="#contact"> Contact Us </a>
           <Link to="/login" className="button">
             Log In
           </Link>
@@ -70,6 +102,7 @@ export default function InfoPage() {
           margin: "1rem 0",
         }}
       />
+
       <div className="hero">
         <div className="hero-content">
           <div className="hero-text">
@@ -80,42 +113,80 @@ export default function InfoPage() {
               SQL injection, unauthorized access, and data breaches.
             </p>
           </div>
-          <div className="hero-image">
-            <img src={logo} alt="QueryGuard Logo" />
+          <div className="hero-image flex items-center space-x-4">
+            <img src={logo} alt="QueryGuard Logo" className="h-10 w-auto" />
+            <h2 className="text-white text-lg font-semibold">
+              <Typewriter
+                words={[
+                  "AI-Powered Security",
+                  "Real-Time Detection",
+                  "SQL Injection Defense",
+                  "Built for Developers",
+                ]}
+                loop={0}
+                cursor
+                cursorStyle="|"
+                typeSpeed={70}
+                deleteSpeed={50}
+                delaySpeed={2000}
+              />
+            </h2>
+          </div>
+        </div>
+      </div>
+
+      <div id="about" className="features-section">
+        <h2> What Sets us Apart? </h2>
+        <h3> Not Just Another Security Scanner </h3>
+        <div className="features-grid">
+          <div className="feature-card">
+            {aboutus.map((plan, idx) => (
+              <div className="card" key={idx}>
+                <h3>{plan.title}</h3>
+                <p>{plan.description}</p>
+                {/* <p>{plan.img}</p> */}
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
       <div id="features" className="features-section">
-        <h3>Powerful Features</h3>
+        <h3>Features</h3>
         <div className="features-grid">
           <div className="feature-card">
             <h4>ML-Powered Detection</h4>
             <p>Advanced AI models detect SQL injection threats in real-time.</p>
+            {/* ML-image(gear working) */}
           </div>
           <div className="feature-card">
             <h4>Real-Time Analytics</h4>
             <p>Monitor visitor logs and suspicious activities instantly.</p>
+            {/* clock image */}
           </div>
           <div className="feature-card">
             <h4>Easy API Integration</h4>
             <p>Supports custom log formats.</p>
+            {/* api image */}
           </div>
           <div className="feature-card">
             <h4>Lightning Fast</h4>
             <p>Optimized for speed without affecting site performance.</p>
+            {/* some image */}
           </div>
           <div className="feature-card">
             <h4>Instant Alerts</h4>
             <p>Get notified of potential SQLi attacks immediately.</p>
+            {/* alerts image */}
           </div>
           <div className="feature-card">
             <h4>Customizable Rules</h4>
             <p>Fine-tune settings to fit your security needs.</p>
+            {/* some image */}
           </div>
         </div>
       </div>
-      <div id="features" className="features-section">
+      <div id="how-it-works" className="features-section">
         <h3>How It Works</h3>
         <div className="features-grid">
           <div className="feature-card">
@@ -128,7 +199,7 @@ export default function InfoPage() {
           </div>
         </div>
       </div>
-      <div id="features" className="features-section">
+      <div id="pricing" className="features-section">
         <h3>Pricing</h3>
         <div className="features-grid">
           <div className="feature-card">
@@ -139,6 +210,18 @@ export default function InfoPage() {
                 <p>{plan.price}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+      <div id="contact" className="features-section">
+        <h3>Contact Us</h3>
+        <div className="features-grid">
+          <div className="feature-card">
+            <p className="text-gray-300 mb-2">Email: support@queryguard.io</p>
+            <p className="text-gray-300 mb-2">Phone: +1 (555) 123-4567</p>
+            <p className="text-gray-300">
+              Address: 123 Cyber Lane, Secure City, CA
+            </p>
           </div>
         </div>
       </div>
