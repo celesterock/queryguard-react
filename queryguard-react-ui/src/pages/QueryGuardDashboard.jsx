@@ -137,11 +137,7 @@ export default function QueryGuardDashboard() {
 
         <div className="card geo-card">
           <h2 className="card-title">Attack Attempt Analytics</h2>
-          <div className="analytics-toggle">
-             <button>Daily</button>
-             <button>Weekly</button>
-          </div>
-	  <AttacksPerDayChart data={attacksPerDayData} />
+          <AttacksPerDayChart data={attacksPerDayData} />
         </div>
 
         <div className="card geo-card">

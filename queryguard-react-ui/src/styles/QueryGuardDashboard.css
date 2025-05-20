@@ -1,31 +1,36 @@
-/* ----- Dashboard Header ----- */
+body {
+  background: #1a202c;
+  margin: 0;
+  padding: 0;
+}
+
 .dashboard-header {
+  background-color: #1a202c;
+  padding: 1.5rem 0;
   text-align: center;
-  margin-bottom: 2rem;
-  margin-top: 2rem;
+  border-bottom: 1px solid #1a202c;
 }
 
 .dashboard-logo {
   display: block;
   width: 8rem;
   height: auto;
-  margin: 0 auto 1rem;
+  margin: 0 auto;
 }
 
 /* ----- Grid Layout ----- */
 .cards-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
   padding: 1rem 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  background: #1a202c;
 }
 
 /* ----- Card Styling ----- */
 .card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background-color: #1a202c;
+  border: 1px solid #1a202c;
   border-radius: 12px;
   padding: 1.5rem;
   backdrop-filter: blur(10px);
@@ -57,11 +62,11 @@
 .card-list li {
   display: flex;
   flex-direction: column;
-  align-items: center;     /* Center pill links */
-  text-align: center;      /* Center plain text */
+  align-items: center;
+  text-align: center;
   gap: 0.5rem;
   padding: 0.6rem 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid #2d3748;
   color: #e2e8f0;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -80,7 +85,6 @@
   margin-top: 0.3rem;
   margin-bottom: 0.3rem;
   border-radius: 999px;
-  background-color: rgba(255, 255, 255, 0.1);
   color: #f7fafc;
   text-decoration: none;
   font-size: 0.95rem;
@@ -88,7 +92,6 @@
 }
 
 .card-list a:hover {
-  background-color: rgba(255, 255, 255, 0.2);
   color: white;
 }
 
@@ -99,7 +102,6 @@
   padding: 0.4rem 0.8rem;
   font-size: 0.9rem;
   color: #63b3ed;
-  background: rgba(255, 255, 255, 0.08);
   border-radius: 6px;
   text-decoration: none;
   font-weight: 500;
@@ -107,15 +109,14 @@
 }
 
 .card-link:hover {
-  background: rgba(255, 255, 255, 0.15);
   color: #ffffff;
 }
 
 /* ----- Geo Card (Full Width) ----- */
 .geo-card {
   grid-column: 1 / -1;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background-color: #1a202c;
+  border: 1px solid #1a202c;
   border-radius: 12px;
   overflow: hidden;
   backdrop-filter: blur(10px);
@@ -137,7 +138,7 @@
 /* ----- Tooltip ----- */
 .tooltip {
   position: absolute;
-  background: rgba(0, 0, 0, 0.85);
+  background: #1a202c;
   color: #fff;
   padding: 0.4rem 0.6rem;
   border-radius: 4px;
@@ -154,6 +155,7 @@
   margin: 40px auto;
   padding: 30px;
   color: #edf2f7;
+  background-color: #1a202c;
 }
 
 .viewmore-page h1 {
@@ -169,7 +171,7 @@
 
 .viewmore-page li {
   margin-bottom: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid #2d3748;
   padding-bottom: 8px;
 }
 
@@ -177,11 +179,3 @@
   display: inline-block;
   margin-top: 30px;
 }
-
-.analytics-toggle {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  background: rgba(255, 0, 0, 0.1);
-}
-

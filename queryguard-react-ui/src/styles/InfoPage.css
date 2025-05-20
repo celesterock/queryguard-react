@@ -3,9 +3,9 @@ body,
 #root {
   margin: 0;
   padding: 0;
+  background-color: #1a202;;
   height: 100%;
   width: 100%;
-  background-color: #1a202c;
 }
 
 body {
@@ -16,12 +16,13 @@ body {
 
 .app-wrapper {
   /* background-color: #1a202c; */
-  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+  background: linear-gradient(rgba(237, 5, 5, 0.6), rgba(0, 0, 0, 0.6)),
     url("https://wallpapers.com/images/high/minimalist-blue-e0q5nh2rivmv9eio.webp");
   color: white;
   text-align: center;
   min-height: 100vh;
 }
+
 
 /* HEADER */
 header {
@@ -30,6 +31,9 @@ header {
   align-items: center;
   padding: 24px;
   margin-right: 16px;
+  background-color: #1a202c; /* ✅ Ensures solid dark top */
+  position: relative;
+  z-index: 2;
 }
 
 header h1 {
