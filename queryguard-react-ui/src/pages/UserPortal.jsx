@@ -10,8 +10,8 @@ export default function UserPortal() {
       <header>
         <h1>QueryGuard</h1>
         <nav>
-          <a href="#dashboard">Dashboard</a>
-          <a href="#tutorials">Tutorials</a>
+	<Link to="/">Log Out</Link>
+
         </nav>
       </header>
 
