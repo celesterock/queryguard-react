@@ -114,80 +114,82 @@ export default function QueryGuardDashboard() {
       <div className="dashboard-header">
         <img src={logo} alt="QueryGuard Logo" className="dashboard-logo" />
       </div>
-
-      <div className="cards-container">
-        {dynamicCards.map(card => (
-          <div key={card.title} className="card">
-            <h2 className="card-title">{card.title}</h2>
-            <ul className="card-list">
-              {card.items.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-            {card.title !== 'Top Attacked Endpoints' && (
-              <Link to={card.link} className="card-link">View More</Link>
-            )}
-          </div>
-        ))}
-
-        <div className="card geo-card">
-          <h2 className="card-title">Targeted Website Endpoints</h2>
-          <EndpointPieChart data={data.endpoints} />
-        </div>
-
-        <div className="card geo-card">
-          <h2 className="card-title">Attack Attempt Analytics</h2>
-          <AttacksPerDayChart data={attacksPerDayData} />
-        </div>
-
-        <div className="card geo-card">
-          <h2 className="card-title">Top SQL Injection Sources</h2>
-          <TopAttackerBarChart data={data.sqliIps} />
-        </div>
-
-        <div className="card geo-card">
-          <h2 className="card-title">SQLi Attempts by Time of Day</h2>
-          <AttacksByHourChart data={attacksByHourData} />
-        </div>
-
-        <div className="card geo-card">
-          <h2 className="card-title">Geographical Overview</h2>
-          <div className="geo-container" onMouseOut={hideTooltip}>
-            <img
-              src={continentsMap}
-              alt="7 Continents Map"
-              useMap="#continents"
-              className="geo-image"
-            />
-            <map name="continents">
-              {[
-                ['70,40,160,130', 'North America: 25%'],
-                ['180,130,280,200', 'South America: 10%'],
-                ['320,70,410,130', 'Europe: 20%'],
-                ['430,90,530,180', 'Africa: 15%'],
-                ['550,40,670,130', 'Asia: 20%'],
-                ['700,200,780,280', 'Australia: 8%'],
-                ['350,300,450,370', 'Antarctica: 2%'],
-              ].map(([coords, label]) => (
-                <area
-                  key={coords}
-                  shape="rect"
-                  coords={coords}
-                  onMouseOver={e => showTooltip(e, label)}
-                />
-              ))}
-            </map>
-            {tooltip.visible && (
-              <div
-                className="tooltip"
-                style={{ left: tooltip.x, top: tooltip.y }}
-              >
-                {tooltip.text}
-              </div>
-            )}
-          </div>
-        </div>
+     <div className="cards-container">
+    {dynamicCards.map(card => (
+      <div key={card.title} className="card">
+        <h2 className="card-title">{card.title}</h2>
+        <ul className="card-list">
+          {card.items.map((item, index) => (
+            <li key={index}>{item}</li>
+          ))}
+        </ul>
+        {card.title !== 'Top Attacked Endpoints' && (
+          <Link to={card.link} className="card-link">View More</Link>
+        )}
       </div>
+    ))}
+  </div>
+
+  {/* ✅ Separate geo-grid layout */}
+  <div className="geo-grid">
+    <div className="card geo-card">
+      <h2 className="card-title">Targeted Website Endpoints</h2>
+      <EndpointPieChart data={data.endpoints} />
+    </div>
+
+    <div className="card geo-card">
+      <h2 className="card-title">Attack Attempt Analytics</h2>
+      <AttacksPerDayChart data={attacksPerDayData} />
+    </div>
+
+    <div className="card geo-card">
+      <h2 className="card-title">Top SQL Injection Sources</h2>
+      <TopAttackerBarChart data={data.sqliIps} />
+    </div>
+
+    <div className="card geo-card">
+      <h2 className="card-title">SQLi Attempts by Time of Day</h2>
+      <AttacksByHourChart data={attacksByHourData} />
+    </div>
+
+    <div className="card geo-card geo-full">
+      <h2 className="card-title">Geographical Overview</h2>
+      <div className="geo-container" onMouseOut={hideTooltip}>
+        <img
+          src={continentsMap}
+          alt="7 Continents Map"
+          useMap="#continents"
+          className="geo-image"
+        />
+        <map name="continents">
+          {[
+            ['70,40,160,130', 'North America: 25%'],
+            ['180,130,280,200', 'South America: 10%'],
+            ['320,70,410,130', 'Europe: 20%'],
+            ['430,90,530,180', 'Africa: 15%'],
+            ['550,40,670,130', 'Asia: 20%'],
+            ['700,200,780,280', 'Australia: 8%'],
+            ['350,300,450,370', 'Antarctica: 2%'],
+          ].map(([coords, label]) => (
+            <area
+              key={coords}
+              shape="rect"
+              coords={coords}
+              onMouseOver={e => showTooltip(e, label)}
+            />
+          ))}
+        </map>
+        {tooltip.visible && (
+          <div
+            className="tooltip"
+            style={{ left: tooltip.x, top: tooltip.y }}
+          >
+            {tooltip.text}
+          </div>
+        )}
+      </div>
+    </div>
+  </div>`
     </div>
   );
 }
