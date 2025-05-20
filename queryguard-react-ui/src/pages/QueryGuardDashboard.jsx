@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import logo from '../assets/logo.png';
+import logo from '../assets/logo_white.png';
 import continentsMap from '../assets/continents.png';
 import '../styles/QueryGuardDashboard.css';
 import EndpointPieChart from './EndpointPieChart';
@@ -137,7 +137,11 @@ export default function QueryGuardDashboard() {
 
         <div className="card geo-card">
           <h2 className="card-title">Attack Attempt Analytics</h2>
-          <AttacksPerDayChart data={attacksPerDayData} />
+          <div className="analytics-toggle">
+             <button>Daily</button>
+             <button>Weekly</button>
+          </div>
+	  <AttacksPerDayChart data={attacksPerDayData} />
         </div>
 
         <div className="card geo-card">
