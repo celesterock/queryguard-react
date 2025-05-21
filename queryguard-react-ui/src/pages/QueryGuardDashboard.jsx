@@ -6,7 +6,7 @@ import '../styles/QueryGuardDashboard.css';
 import EndpointPieChart from './EndpointPieChart';
 import AttacksPerDayChart from './AttacksPerDayChart';
 import TopAttackerBarChart from './TopAttackerBarChart';
-import AttacksByHourChart from './AttacksByHourChart'; // 🆕 New chart import
+import AttacksByHourChart from './AttacksByHourChart';
 
 export default function QueryGuardDashboard() {
   const [data, setData] = useState({
@@ -18,8 +18,12 @@ export default function QueryGuardDashboard() {
   });
 
   const [attacksPerDayData, setAttacksPerDayData] = useState([]);
-  const [attacksByHourData, setAttacksByHourData] = useState([]); // 🆕
+  const [attacksByHourData, setAttacksByHourData] = useState([]);
   const [error, setError] = useState(null);
+
+  const [continentStats, setContinentStats] = useState({});
+  const [hoveredContinent, setHoveredContinent] = useState(null);
+  const [tooltip, setTooltip] = useState({ visible: false, text: '', x: 0, y: 0 });
 
   useEffect(() => {
     Promise.all([
@@ -73,6 +77,11 @@ export default function QueryGuardDashboard() {
         console.error('Error loading hourly data:', err.message);
       });
 
+    fetch('http://3.149.254.38:3000/api/continent-stats', { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => setContinentStats(data))
+      .catch(err => console.error('Failed to load continent stats:', err));
+
   }, []);
 
   const dynamicCards = [
@@ -94,7 +103,7 @@ export default function QueryGuardDashboard() {
     {
       title: 'Top Attacked Endpoints',
       items: data.endpoints.map((item) => (
-        <Link to={`/endpoint/${encodeURIComponent(item.raw)}`}>
+        <Link to={`/endpoint/${encodeURIComponent(item.raw)}`} key={item.raw}>
           {item.label}
         </Link>
       )),
@@ -102,10 +111,14 @@ export default function QueryGuardDashboard() {
     },
   ];
 
-  const [tooltip, setTooltip] = useState({ visible: false, text: '', x: 0, y: 0 });
   const showTooltip = (e, text) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    setTooltip({ visible: true, text, x: e.clientX - rect.left + 10, y: e.clientY - rect.top + 10 });
+    setTooltip({
+      visible: true,
+      text,
+      x: e.clientX - rect.left + 10,
+      y: e.clientY - rect.top + 10,
+    });
   };
   const hideTooltip = () => setTooltip(t => ({ ...t, visible: false }));
 
@@ -114,82 +127,101 @@ export default function QueryGuardDashboard() {
       <div className="dashboard-header">
         <img src={logo} alt="QueryGuard Logo" className="dashboard-logo" />
       </div>
-     <div className="cards-container">
-    {dynamicCards.map(card => (
-      <div key={card.title} className="card">
-        <h2 className="card-title">{card.title}</h2>
-        <ul className="card-list">
-          {card.items.map((item, index) => (
-            <li key={index}>{item}</li>
-          ))}
-        </ul>
-        {card.title !== 'Top Attacked Endpoints' && (
-          <Link to={card.link} className="card-link">View More</Link>
-        )}
-      </div>
-    ))}
-  </div>
 
-  {/* ✅ Separate geo-grid layout */}
-  <div className="geo-grid">
-    <div className="card geo-card">
-      <h2 className="card-title">Targeted Website Endpoints</h2>
-      <EndpointPieChart data={data.endpoints} />
-    </div>
-
-    <div className="card geo-card">
-      <h2 className="card-title">Attack Attempt Analytics</h2>
-      <AttacksPerDayChart data={attacksPerDayData} />
-    </div>
-
-    <div className="card geo-card">
-      <h2 className="card-title">Top SQL Injection Sources</h2>
-      <TopAttackerBarChart data={data.sqliIps} />
-    </div>
-
-    <div className="card geo-card">
-      <h2 className="card-title">SQLi Attempts by Time of Day</h2>
-      <AttacksByHourChart data={attacksByHourData} />
-    </div>
-
-    <div className="card geo-card geo-full">
-      <h2 className="card-title">Geographical Overview</h2>
-      <div className="geo-container" onMouseOut={hideTooltip}>
-        <img
-          src={continentsMap}
-          alt="7 Continents Map"
-          useMap="#continents"
-          className="geo-image"
-        />
-        <map name="continents">
-          {[
-            ['70,40,160,130', 'North America: 25%'],
-            ['180,130,280,200', 'South America: 10%'],
-            ['320,70,410,130', 'Europe: 20%'],
-            ['430,90,530,180', 'Africa: 15%'],
-            ['550,40,670,130', 'Asia: 20%'],
-            ['700,200,780,280', 'Australia: 8%'],
-            ['350,300,450,370', 'Antarctica: 2%'],
-          ].map(([coords, label]) => (
-            <area
-              key={coords}
-              shape="rect"
-              coords={coords}
-              onMouseOver={e => showTooltip(e, label)}
-            />
-          ))}
-        </map>
-        {tooltip.visible && (
-          <div
-            className="tooltip"
-            style={{ left: tooltip.x, top: tooltip.y }}
-          >
-            {tooltip.text}
+      <div className="cards-container">
+        {dynamicCards.map(card => (
+          <div key={card.title} className="card">
+            <h2 className="card-title">{card.title}</h2>
+            <ul className="card-list">
+              {card.items.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+            {card.title !== 'Top Attacked Endpoints' && (
+              <Link to={card.link} className="card-link">View More</Link>
+            )}
           </div>
-        )}
+        ))}
+
+        <div className="card geo-card">
+          <h2 className="card-title">Targeted Website Endpoints</h2>
+          <EndpointPieChart data={data.endpoints} />
+        </div>
+
+        <div className="card geo-card">
+          <h2 className="card-title">Attack Attempt Analytics</h2>
+          <AttacksPerDayChart data={attacksPerDayData} />
+        </div>
+
+        <div className="card geo-card">
+          <h2 className="card-title">Top SQL Injection Sources</h2>
+          <TopAttackerBarChart data={data.sqliIps} />
+        </div>
+
+        <div className="card geo-card">
+          <h2 className="card-title">SQLi Attempts by Time of Day</h2>
+          <AttacksByHourChart data={attacksByHourData} />
+        </div>
+
+        {/* Map-based geo analytics */}
+        <div className="card geo-card">
+          <h2 className="card-title">Geographical Overview</h2>
+          <div className="geo-inner">
+            <div className="geo-buttons">
+              {['north-america', 'south-america', 'africa', 'asia', 'europe', 'antarctica', 'australia'].map(continent => (
+                <button
+                  key={continent}
+                  className={`sidebar-button btn-${continent}`}
+                  onMouseEnter={() => setHoveredContinent(continent)}
+                  onMouseLeave={() => setHoveredContinent(null)}
+                >
+                  {continent.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                </button>
+              ))}
+            </div>
+            <div className="geo-container" onMouseOut={hideTooltip}>
+              <div className="geo-map-wrapper">
+                <img
+                  src={continentsMap}
+                  alt="7 Continents Map"
+                  className="geo-image"
+                />
+
+
+
+{[
+  { x: 15, y: 22, key: 'north-america' },
+  { x: 26, y: 61, key: 'south-america' },
+  { x: 50, y: 19, key: 'europe' },
+  { x: 53, y: 44, key: 'africa' },
+  { x: 74, y: 17, key: 'asia' },
+  { x: 88, y: 59, key: 'australia' },
+  { x: 62, y: 95, key: 'antarctica' },
+].map((dot, i) => (
+  <div
+    key={i}
+    className={`geo-number ${hoveredContinent === dot.key ? 'highlight' : ''}`}
+    style={{
+      left: `${dot.x}%`,
+      top: `${dot.y}%`
+    }}
+  >
+    {continentStats[dot.key] ?? 0}%
+  </div>
+))}
+             
+
+
+ </div>
+              {tooltip.visible && (
+                <div className="tooltip" style={{ left: tooltip.x, top: tooltip.y }}>
+                  {tooltip.text}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>`
     </div>
   );
 }

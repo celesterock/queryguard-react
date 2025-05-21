@@ -379,6 +379,60 @@ app.get('/api/injections-by-hour', requireLogin, async (req, res) => {
   }
 });
 
+const continentMap = {
+  'North America': ['United States', 'Canada', 'Mexico'],
+  'South America': ['Brazil', 'Argentina', 'Chile', 'Colombia'],
+  'Europe': ['Germany', 'France', 'Italy', 'Spain', 'United Kingdom', 'Poland', 'Netherlands'],
+  'Africa': ['Nigeria', 'South Africa', 'Egypt', 'Kenya', 'Morocco'],
+  'Asia': ['China', 'Japan', 'India', 'Russia', 'Indonesia', 'Pakistan', 'Iran'],
+  'Australia': ['Australia', 'New Zealand'],
+  'Antarctica': ['Antarctica']
+};
+
+app.get('/api/continent-stats', requireLogin, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT location FROM logs WHERE user_id = $1`,
+      [req.session.user_id]
+    );
+
+    const counts = {
+      'north-america': 0,
+      'south-america': 0,
+      'europe': 0,
+      'africa': 0,
+      'asia': 0,
+      'australia': 0,
+      'antarctica': 0
+    };
+
+    let total = 0;
+
+    for (let row of result.rows) {
+      if (!row.location) continue;
+      const match = row.location.split(',').pop().trim(); // Get country from end
+      for (let [continent, countries] of Object.entries(continentMap)) {
+        if (countries.includes(match)) {
+          const key = continent.toLowerCase().replace(' ', '-');
+          counts[key]++;
+          total++;
+          break;
+        }
+      }
+    }
+
+    const percentages = {};
+    for (let [key, count] of Object.entries(counts)) {
+      percentages[key] = total > 0 ? Math.round((count / total) * 100) : 0;
+    }
+
+    res.json(percentages);
+  } catch (err) {
+    console.error('Error in /api/continent-stats:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 
 // Serve React App
 app.get('/*', (req, res) => {

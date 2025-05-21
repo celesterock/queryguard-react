@@ -131,8 +131,9 @@ body {
 }
 
 .geo-full {
-  grid-column: 1 / -1; /* ✅ Makes this card span across both columns */
+  grid-column: 1 / -1;
 }
+
 
 .geo-card {
   background-color: #1a202c;
@@ -142,8 +143,17 @@ body {
   backdrop-filter: blur(10px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   color: #fff;
-  padding: 1rem;
+  padding: 2rem 3rem;
+  grid-column: 1 / -1;
+
+  width: 100%;
+  max-width: 100vw;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  margin-left: -2rem;
+  margin-right: -2rem;
 }
+
 
 .geo-container {
   position: relative;
@@ -198,4 +208,103 @@ body {
 .viewmore-page .card-link {
   display: inline-block;
   margin-top: 30px;
+}
+
+
+/* ----- Geo Map Overlay and Buttons ----- */
+.geo-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.geo-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.geo-map-wrapper {
+  width: 100%;
+  max-width: 100%;
+  flex-grow: 1;
+}
+
+
+.geo-image {
+  width: 100%;
+  height: auto;
+  max-width: none;
+  display: block;
+}
+
+
+/* Overlay percentages on the map */
+.geo-number {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  color: #f7fafc;
+  font-size: 1.8rem;
+  font-weight: 700;
+  font-family: 'Segoe UI', 'Arial Rounded MT Bold', sans-serif;
+  pointer-events: none;
+  transition: transform 0.2s ease;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+}
+
+.geo-number.highlight {
+  transform: translate(-50%, -50%) scale(1.3);
+  color: #d40b68;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+}
+
+
+.geo-number:hover {
+  transform: translate(-50%, -50%) scale(1.25);
+}
+
+/* Continent Button Colors */
+.sidebar-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  font-size: 1rem;
+  color: white;
+  transition: transform 0.2s ease;
+}
+.sidebar-button:hover {
+  transform: scale(1.05);
+}
+
+.btn-north-america { background-color: #4299e1; }
+.btn-south-america { background-color: #2b6cb0; }
+.btn-africa        { background-color: #38a169; }
+.btn-asia          { background-color: #d69e2e; }
+.btn-europe        { background-color: #9f7aea; }
+.btn-antarctica    { background-color: #718096; }
+.btn-australia     { background-color: #ed8936; }
+
+/* Responsive layout for smaller screens */
+@media (max-width: 768px) {
+  .geo-inner {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .geo-buttons {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .geo-number {
+    font-size: 1.4rem;
+  }
 }
