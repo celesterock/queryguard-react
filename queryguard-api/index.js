@@ -70,6 +70,23 @@ function normalizeIp(ip) {
 }
 
 /**
+ * Get location (city, region, country) from IP address.
+ */
+async function getLocationFromIp(ip) {
+  try {
+    const { data } = await axios.get(`http://ip-api.com/json/${ip}`);
+    if (data.status === 'success') {
+      return `${data.city}, ${data.regionName}, ${data.country}`;
+    }
+  } catch (err) {
+    console.warn(`Geolocation lookup failed for IP ${ip}:`, err.message);
+  }
+  return 'Unknown';
+}
+
+
+
+/**
  * Parse request body and return the first field that the model flags as malicious.
  * Returns { value, prediction } where prediction is 0 or 1.
  */
@@ -123,19 +140,23 @@ app.post('/log', async (req, res) => {
     // Run BERT model prediction on all fields in body
     const { value: maliciousInput, prediction } = await extractMaliciousField(body);
 
+    // location lookup
+    const location = await getLocationFromIp(userIp);
+
     // Insert the log
     const insertQuery = `
-      INSERT INTO logs (method, endpoint, ip, timestamp, request_body, user_id, prediction)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      INSERT INTO logs (method, endpoint, ip, timestamp, request_body, user_id, prediction, location)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     `;
     await pool.query(insertQuery, [
       method || 'UNKNOWN',
       endpoint || 'unknown',
-      userIp || 'unknown', // this is the site visitor’s IP
+      userIp || 'unknown',
       timestamp || new Date().toISOString(),
       maliciousInput || '[no suspicious input detected]',
       userId,
-      prediction
+      prediction,
+      location
     ]);
 
     console.log(`Log inserted for user ${userId} (Client IP ${clientIp}, Visitor IP ${userIp}) → Prediction: ${prediction}`);
