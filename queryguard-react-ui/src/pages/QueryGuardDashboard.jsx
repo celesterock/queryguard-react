@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '../assets/logo_white.png';
-import continentsMap from '../assets/continents.png';
+import continentsMap from '../assets/world_map.jpg';
 import '../styles/QueryGuardDashboard.css';
 import EndpointPieChart from './EndpointPieChart';
 import AttacksPerDayChart from './AttacksPerDayChart';
@@ -190,13 +190,13 @@ export default function QueryGuardDashboard() {
 
 
 {[
-  { x: 15, y: 22, key: 'north-america' },
-  { x: 26, y: 61, key: 'south-america' },
-  { x: 50, y: 19, key: 'europe' },
-  { x: 53, y: 44, key: 'africa' },
-  { x: 74, y: 17, key: 'asia' },
-  { x: 88, y: 59, key: 'australia' },
-  { x: 62, y: 95, key: 'antarctica' },
+  { x: 25, y: 39, key: 'north-america' },
+  { x: 36, y: 63, key: 'south-america' },
+  { x: 57, y: 32, key: 'europe' },
+  { x: 56, y: 54, key: 'africa' },
+  { x: 77, y: 29, key: 'asia' },
+  { x: 84, y: 67, key: 'australia' },
+  { x: 64, y: 96, key: 'antarctica' },
 ].map((dot, i) => (
   <div
     key={i}
