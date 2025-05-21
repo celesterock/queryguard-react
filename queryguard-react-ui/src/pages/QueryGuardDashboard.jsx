@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import logo from '../assets/logo.png';
-import continentsMap from '../assets/continents.png';
-import '../styles/QueryGuardDashboard.css';
-import EndpointPieChart from './EndpointPieChart';
-import AttacksPerDayChart from './AttacksPerDayChart';
-import TopAttackerBarChart from './TopAttackerBarChart';
-import AttacksByHourChart from './AttacksByHourChart'; // 🆕 New chart import
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import logo_white from "../assets/logo_white.png";
+import continentsMap from "../assets/continents.png";
+import "../styles/QueryGuardDashboard.css";
+import EndpointPieChart from "./EndpointPieChart";
+import AttacksPerDayChart from "./AttacksPerDayChart";
+import TopAttackerBarChart from "./TopAttackerBarChart";
+import AttacksByHourChart from "./AttacksByHourChart"; // 🆕 New chart import
 
 export default function QueryGuardDashboard() {
   const [data, setData] = useState({
@@ -14,7 +14,7 @@ export default function QueryGuardDashboard() {
     recent: [],
     ips: [],
     endpoints: [],
-    sqliIps: []
+    sqliIps: [],
   });
 
   const [attacksPerDayData, setAttacksPerDayData] = useState([]);
@@ -23,100 +23,130 @@ export default function QueryGuardDashboard() {
 
   useEffect(() => {
     Promise.all([
-      fetch('http://3.149.254.38:3000/api/common-injections', { credentials: 'include' }).then(res => res.json()),
-      fetch('http://3.149.254.38:3000/api/recent-injections', { credentials: 'include' }).then(res => res.json()),
-      fetch('http://3.149.254.38:3000/api/most-recent-ips', { credentials: 'include' }).then(res => res.json()),
-      fetch('http://3.149.254.38:3000/api/top-attacked-endpoints', { credentials: 'include' }).then(res => res.json()),
-      fetch('http://3.149.254.38:3000/api/top-sqli-ips', { credentials: 'include' }).then(res => res.json())
+      fetch("http://3.149.254.38:3000/api/common-injections", {
+        credentials: "include",
+      }).then((res) => res.json()),
+      fetch("http://3.149.254.38:3000/api/recent-injections", {
+        credentials: "include",
+      }).then((res) => res.json()),
+      fetch("http://3.149.254.38:3000/api/most-recent-ips", {
+        credentials: "include",
+      }).then((res) => res.json()),
+      fetch("http://3.149.254.38:3000/api/top-attacked-endpoints", {
+        credentials: "include",
+      }).then((res) => res.json()),
+      fetch("http://3.149.254.38:3000/api/top-sqli-ips", {
+        credentials: "include",
+      }).then((res) => res.json()),
     ])
       .then(([common, recent, ips, endpoints, sqliIps]) => {
         setData({
-          common: common.slice(0, 5).map(row => {
-            const body = typeof row.injection === 'string'
-              ? row.injection
-              : JSON.stringify(row.injection);
+          common: common.slice(0, 5).map((row) => {
+            const body =
+              typeof row.injection === "string"
+                ? row.injection
+                : JSON.stringify(row.injection);
             return `${body} (${row.count})`;
           }),
-          recent: recent.slice(0, 5).map(row => row.injection),
+          recent: recent.slice(0, 5).map((row) => row.injection),
           ips: ips.slice(0, 5),
-          endpoints: endpoints.slice(0, 5).map(row => ({
+          endpoints: endpoints.slice(0, 5).map((row) => ({
             label: `${row.endpoint} (${row.count})`,
-            raw: row.endpoint
+            raw: row.endpoint,
           })),
-          sqliIps: sqliIps || []
+          sqliIps: sqliIps || [],
         });
       })
       .catch((err) => {
-        console.error('Dashboard data load failed:', err);
-        setError('Failed to load dashboard data.');
+        console.error("Dashboard data load failed:", err);
+        setError("Failed to load dashboard data.");
       });
 
-    fetch('http://3.149.254.38:3000/api/chart/injections-per-day', { credentials: 'include' })
-      .then(res => res.json())
-      .then(chartLogs => {
+    fetch("http://3.149.254.38:3000/api/chart/injections-per-day", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((chartLogs) => {
         const attacksByDay = {};
-        chartLogs.forEach(row => {
+        chartLogs.forEach((row) => {
           if (Number(row.prediction) === 1) {
-            const day = new Date(row.timestamp).toISOString().split('T')[0];
+            const day = new Date(row.timestamp).toISOString().split("T")[0];
             attacksByDay[day] = (attacksByDay[day] || 0) + 1;
           }
         });
 
-        const attacksData = Object.entries(attacksByDay).map(([date, count]) => ({ date, count }));
+        const attacksData = Object.entries(attacksByDay).map(
+          ([date, count]) => ({ date, count })
+        );
         setAttacksPerDayData(attacksData);
       });
 
-    fetch('http://3.149.254.38:3000/api/injections-by-hour', { credentials: 'include' })
-      .then(res => res.json())
-      .then(hourData => setAttacksByHourData(hourData))
-      .catch(err => {
-        console.error('Error loading hourly data:', err.message);
+    fetch("http://3.149.254.38:3000/api/injections-by-hour", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((hourData) => setAttacksByHourData(hourData))
+      .catch((err) => {
+        console.error("Error loading hourly data:", err.message);
       });
-
   }, []);
 
   const dynamicCards = [
     {
-      title: 'Most Recent IP Addresses',
+      title: "Most Recent IP Addresses",
       items: data.ips,
-      link: '/ip-details',
+      link: "/ip-details",
     },
     {
-      title: 'Most Recent SQL Injections',
+      title: "Most Recent SQL Injections",
       items: data.recent,
-      link: '/recent-injections',
+      link: "/recent-injections",
     },
     {
-      title: 'Most Common SQL Injections',
+      title: "Most Common SQL Injections",
       items: data.common,
-      link: '/common-injections',
+      link: "/common-injections",
     },
     {
-      title: 'Top Attacked Endpoints',
+      title: "Top Attacked Endpoints",
       items: data.endpoints.map((item) => (
         <Link to={`/endpoint/${encodeURIComponent(item.raw)}`}>
           {item.label}
         </Link>
       )),
-      link: '/endpoint-details'
+      link: "/endpoint-details",
     },
   ];
 
-  const [tooltip, setTooltip] = useState({ visible: false, text: '', x: 0, y: 0 });
+  const [tooltip, setTooltip] = useState({
+    visible: false,
+    text: "",
+    x: 0,
+    y: 0,
+  });
   const showTooltip = (e, text) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    setTooltip({ visible: true, text, x: e.clientX - rect.left + 10, y: e.clientY - rect.top + 10 });
+    setTooltip({
+      visible: true,
+      text,
+      x: e.clientX - rect.left + 10,
+      y: e.clientY - rect.top + 10,
+    });
   };
-  const hideTooltip = () => setTooltip(t => ({ ...t, visible: false }));
+  const hideTooltip = () => setTooltip((t) => ({ ...t, visible: false }));
 
   return (
     <div>
       <div className="dashboard-header">
-        <img src={logo} alt="QueryGuard Logo" className="dashboard-logo" />
+        <img
+          src={logo_white}
+          alt="QueryGuard Logo"
+          className="dashboard-logo"
+        />
       </div>
 
       <div className="cards-container">
-        {dynamicCards.map(card => (
+        {dynamicCards.map((card) => (
           <div key={card.title} className="card">
             <h2 className="card-title">{card.title}</h2>
             <ul className="card-list">
@@ -124,8 +154,10 @@ export default function QueryGuardDashboard() {
                 <li key={index}>{item}</li>
               ))}
             </ul>
-            {card.title !== 'Top Attacked Endpoints' && (
-              <Link to={card.link} className="card-link">View More</Link>
+            {card.title !== "Top Attacked Endpoints" && (
+              <Link to={card.link} className="card-link">
+                View More
+              </Link>
             )}
           </div>
         ))}
@@ -161,19 +193,19 @@ export default function QueryGuardDashboard() {
             />
             <map name="continents">
               {[
-                ['70,40,160,130', 'North America: 25%'],
-                ['180,130,280,200', 'South America: 10%'],
-                ['320,70,410,130', 'Europe: 20%'],
-                ['430,90,530,180', 'Africa: 15%'],
-                ['550,40,670,130', 'Asia: 20%'],
-                ['700,200,780,280', 'Australia: 8%'],
-                ['350,300,450,370', 'Antarctica: 2%'],
+                ["70,40,160,130", "North America: 25%"],
+                ["180,130,280,200", "South America: 10%"],
+                ["320,70,410,130", "Europe: 20%"],
+                ["430,90,530,180", "Africa: 15%"],
+                ["550,40,670,130", "Asia: 20%"],
+                ["700,200,780,280", "Australia: 8%"],
+                ["350,300,450,370", "Antarctica: 2%"],
               ].map(([coords, label]) => (
                 <area
                   key={coords}
                   shape="rect"
                   coords={coords}
-                  onMouseOver={e => showTooltip(e, label)}
+                  onMouseOver={(e) => showTooltip(e, label)}
                 />
               ))}
             </map>

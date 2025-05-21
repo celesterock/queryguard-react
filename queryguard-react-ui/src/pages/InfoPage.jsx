@@ -1,50 +1,101 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import logo_white from "../assets/logo_white.png";
+import Celeste from "../assets/Celeste.jpg";
+import Stephanie from "../assets/Stephanie.jpg";
+import Anushka from "../assets/Anushka.jpg";
 import "../styles/InfoPage.css";
 import { Typewriter } from "react-simple-typewriter";
+import { faBrain } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faDownload,
+  faSearch,
+  faShieldAlt,
+  faChartLine,
+  faPlug,
+  faCogs,
+  faMagic,
+  faListAlt,
+  faMapMarkerAlt,
+  faNetworkWired,
+  faBug,
+  faCode,
+  faDatabase,
+  faLock,
+  faUserShield,
+} from "@fortawesome/free-solid-svg-icons";
 
 const steps = [
   {
+    icon: faDownload,
     title: "Install Middleware",
     description:
       "Add QueryGuard to your web app with a simple package install and import.",
   },
   {
+    icon: faNetworkWired,
     title: "Start Logging",
     description:
-      "Capture requests in real-time which are automatically sent to  QueryGuard for analysis .",
+      "Capture requests in real-time which are automatically sent to QueryGuard for analysis.",
   },
   {
+    icon: faSearch,
     title: "Analyze Threats",
     description:
-      "Use your dashboard to explore potential SQL injection attempts.",
+      "Use your dashboard to explore potential SQL injection attempts and other related analytics.",
+  },
+];
+
+const teamInfo = [
+  {
+    title: "Stephanie Chen",
+    description: "Full Stack Engineer",
+    img: Stephanie,
+    email: "stephtc1@uci.edu",
+  },
+  {
+    title: "Celeste Rock",
+    description: "Full Stack Engineer",
+    img: Celeste,
+    email: "crock1@uci.edu",
+  },
+  {
+    title: "Anushka Dwivedi",
+    description: "Full Stack Engineer",
+    img: Anushka,
+    email: "adwived3@uci.edu",
   },
 ];
 
 // add images to each of these
 const aboutus = [
   {
+    icon: faBrain,
     title: "BERT-Based ML Detection",
     description:
       "QueryGuard uses the latest in natural language processing to enable us to catch obfuscated or unconventional attacks other tools miss.",
   },
   {
+    icon: faChartLine,
     title: "Real-Time Analytics Dashboard",
     description:
       "QueryGuard’s live dashboard gives users and admins clear visibility into who, when, and how attacks are attempted.",
   },
   {
+    icon: faPlug,
     title: "Plug-and-Play Architecture",
     description:
       " No code rewrites, no deep integrations. Hosting platforms can deploy QueryGuard via a simple and package.",
   },
   {
+    icon: faCogs,
     title: "Designed for Integration",
     description:
       "Whether as an add-on, bundled feature, or part of a custom tier, it adapts to your business model—not the other way around.",
   },
   {
+    icon: faMagic,
     title: "Focused on Value, Not Complexity.",
     description:
       "We skip the jargon, steep learning curves, and bloated UIs. What’s left is a clean, modern solution that works quietly in the background",
@@ -53,19 +104,35 @@ const aboutus = [
 
 const pricingPlans = [
   {
+    icon: faUserShield,
+    title: "Premium",
+    description: [
+      "Most Recent IP Connections",
+      "Number of Attack Attempts per Day",
+      "Common IPs Attempting SQL Injections",
+      "Most Commonly Attacked Website Endpoints",
+    ],
+    price: "$15/month",
+  },
+  {
+    icon: faBug,
+    title: "Standard",
+    description: [
+      "Most Recent SQL injection attempt queries",
+      "Most Common SQL injection attempt queries",
+      "Most Recent IP Connections",
+      "Number of Attack Attempts per Day",
+    ],
+    price: "$8/month",
+  },
+  {
+    icon: faCode,
     title: "Free",
-    description: "Basic logging and alerts",
-    price: "$0",
-  },
-  {
-    title: "Pro",
-    description: "Advanced analytics and ML detection",
-    price: "$15/mo",
-  },
-  {
-    title: "Enterprise",
-    description: "Custom integrations & priority support",
-    price: "TBD",
+    description: [
+      "Most Recent SQL injection attempt queries",
+      "Most Common SQL injection attempt queries",
+    ],
+    price: "$0/month",
   },
 ];
 
@@ -145,6 +212,17 @@ export default function InfoPage() {
         <div className="features-grid-about">
           {aboutus.slice(0, 3).map((plan, idx) => (
             <div className="feature-card" key={idx}>
+              <FontAwesomeIcon
+                icon={plan.icon}
+                size="2x"
+                style={{
+                  backgroundColor: "transparent",
+                  marginBottom: "0.5rem",
+                  color: "#7393B3",
+                  height: "80px",
+                  width: "100px",
+                }}
+              />
               <h3>{plan.title}</h3>
               <p>{plan.description}</p>
             </div>
@@ -161,6 +239,17 @@ export default function InfoPage() {
         >
           {aboutus.slice(3).map((plan, idx) => (
             <div className="feature-card" key={idx}>
+              <FontAwesomeIcon
+                icon={plan.icon}
+                size="2x"
+                style={{
+                  backgroundColor: "transparent",
+                  marginBottom: "0.5rem",
+                  color: "#7393B3",
+                  height: "80px",
+                  width: "100px",
+                }}
+              />
               <h3>{plan.title}</h3>
               <p>{plan.description}</p>
             </div>
@@ -168,74 +257,83 @@ export default function InfoPage() {
         </div>
       </div>
 
-      <div id="features" className="features-section">
-        <h3>Features</h3>
-        <div className="features-grid-features">
-          <div className="feature-card">
-            <h3>ML-Powered Detection</h3>
-            <p>Advanced AI models detect SQL injection threats in real-time.</p>
-            {/* ML-image(gear working) */}
-          </div>
-          <div className="feature-card">
-            <h3>Real-Time Analytics</h3>
-            <p>Monitor visitor logs and suspicious activities instantly.</p>
-            {/* clock image */}
-          </div>
-          <div className="feature-card">
-            <h3>Easy API Integration</h3>
-            <p>Supports custom log formats.</p>
-            {/* api image */}
-          </div>
-          <div className="feature-card">
-            <h3>Lightning Fast</h3>
-            <p>Optimized for speed without affecting site performance.</p>
-            {/* some image */}
-          </div>
-          <div className="feature-card">
-            <h3>Instant Alerts</h3>
-            <p>Get notified of potential SQLi attacks immediately.</p>
-            {/* alerts image */}
-          </div>
-          <div className="feature-card">
-            <h3>Customizable Rules</h3>
-            <p>Fine-tune settings to fit your security needs.</p>
-            {/* some image */}
-          </div>
-        </div>
-      </div>
       <div id="how-it-works" className="features-section">
         <h3>How It Works</h3>
         <div className="features-grid">
           {steps.map((step, idx) => (
             <div className="feature-card" key={idx}>
+              <FontAwesomeIcon
+                icon={step.icon}
+                size="2x"
+                style={{
+                  backgroundColor: "transparent",
+                  marginBottom: "0.5rem",
+                  color: "#7393B3",
+                  height: "80px",
+                  width: "100px",
+                }}
+              />
               <h3>{step.title}</h3>
               <p>{step.description}</p>
             </div>
           ))}
         </div>
       </div>
-      <div id="pricing" className="features-section">
-        <h3>Pricing</h3>
-        <div className="features-grid">
+      <div id="pricing" className="pricing-section">
+        <h3 className="pricing-heading">Pricing</h3>
+        <div className="pricing-grid pricing-grid-horizontal">
           {pricingPlans.map((plan, idx) => (
-            <div className="feature-card" key={idx}>
-              <h3>{plan.title}</h3>
-              <p>{plan.description}</p>
-              <p>{plan.price}</p>
+            <div className="pricing-flip-card" key={idx}>
+              <div className="pricing-flip-inner">
+                {/* FRONT SIDE */}
+                <div className="pricing-flip-front" key={idx}>
+                  <FontAwesomeIcon
+                    icon={plan.icon}
+                    size="2x"
+                    style={{
+                      backgroundColor: "transparent",
+                      marginBottom: "0.5rem",
+                      color: "#7393B3",
+                      height: "80px",
+                      width: "100px",
+                    }}
+                  />
+                  <h3 className="pricing-title">{plan.title}</h3>
+                  <h3 className="pricing-price">{plan.price}</h3>
+                </div>
+
+                {/* BACK SIDE */}
+                <div className="pricing-flip-back">
+                  <h2 className="pricing-features-heading">Features:</h2>
+                  <ul className="pricing-features">
+                    {plan.description.map((item, index) => (
+                      <li key={index} className="pricing-feature-item">
+                        ✅ {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </div>
           ))}
         </div>
       </div>
-      <div id="contact" className="features-section">
-        <h3>Contact Us</h3>
-        <div className="features-grid">
-          <div className="feature-card">
-            <p className="text-gray-300 mb-2">Email: support@qg.com</p>
-            <p className="text-gray-300 mb-2">Phone: +1 (555) 123-4567</p>
-            <p className="text-gray-300">
-              Address: University of California Irvine, CA
-            </p>
-          </div>
+      <div id="contact" className="contact-container">
+        <h2 className="contact-heading">Contact Us</h2>
+        <h3>
+          Email: <strong>QueryGuardians@gmail.com</strong>
+        </h3>
+        <h3>University of California Irvine, CA</h3>
+
+        <div className="team-cards">
+          {teamInfo.map((info, idx) => (
+            <div className="team-card" key={idx}>
+              <img src={info.img} alt={info.title} className="team-img" />
+              <h3>{info.title}</h3>
+              <p>{info.description}</p>
+              <p>{info.email}</p>
+            </div>
+          ))}
         </div>
       </div>
       <footer>
@@ -244,3 +342,41 @@ export default function InfoPage() {
     </div>
   );
 }
+
+/*{
+  /* <div id="features" className="features-section">
+<h3>Features</h3>
+<div className="features-grid-features">
+  <div className="feature-card">
+    <h3>ML-Powered Detection</h3>
+    <p>Advanced AI models detect SQL injection threats in real-time.</p>
+    {/* ML-image(gear working) }
+  </div>
+  <div className="feature-card">
+    <h3>Real-Time Analytics</h3>
+    <p>Monitor visitor logs and suspicious activities instantly.</p>
+    {/* clock image }
+  </div>
+  <div className="feature-card">
+    <h3>Easy API Integration</h3>
+    <p>Supports custom log formats.</p>
+    {/* api image }
+  </div>
+  <div className="feature-card">
+    <h3>Lightning Fast</h3>
+    <p>Optimized for speed without affecting site performance.</p>
+    {/* some image }
+  </div>
+  <div className="feature-card">
+    <h3>Instant Alerts</h3>
+    <p>Get notified of potential SQLi attacks immediately.</p>
+    {/* alerts image }
+  </div>
+  <div className="feature-card">
+    <h3>Customizable Rules</h3>
+    <p>Fine-tune settings to fit your security needs.</p>
+    {/* some image }
+  </div>
+</div>
+</div> 
+} */
