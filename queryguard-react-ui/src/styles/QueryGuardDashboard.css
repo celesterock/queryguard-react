@@ -284,13 +284,13 @@ body {
   transform: scale(1.05);
 }
 
-.btn-north-america { background-color: #4299e1; }
-.btn-south-america { background-color: #2b6cb0; }
-.btn-africa        { background-color: #38a169; }
-.btn-asia          { background-color: #d69e2e; }
-.btn-europe        { background-color: #9f7aea; }
-.btn-antarctica    { background-color: #718096; }
-.btn-australia     { background-color: #ed8936; }
+.btn-north-america { background-color: #A1A8BE; }
+.btn-south-america { background-color: #BD6809; }
+.btn-africa        { background-color: #3F0013; }
+.btn-asia          { background-color: #EDBEE4; }
+.btn-antarctica    { background-color: #5F5420; }
+.btn-europe        { background-color: #F3D0C3; }
+.btn-australia     { background-color: #EA785B; }
 
 /* Responsive layout for smaller screens */
 @media (max-width: 768px) {

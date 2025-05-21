@@ -434,6 +434,38 @@ app.get('/api/continent-stats', requireLogin, async (req, res) => {
 });
 
 
+app.get('/api/logs-by-continent', requireLogin, async (req, res) => {
+  const { continent } = req.query;
+
+  // Match lowercase-dashed continent keys to your camel case keys
+  const normalizedKey = Object.keys(continentMap).find(
+    key => key.toLowerCase().replace(/\s+/g, '-') === continent
+  );
+
+  if (!continent || !normalizedKey) {
+    return res.status(400).json({ message: 'Invalid or missing continent' });
+  }
+
+  try {
+    const { rows } = await pool.query(`
+      SELECT DISTINCT ip, location
+      FROM logs
+      WHERE user_id = $1
+        AND location IS NOT NULL
+    `, [req.session.user_id]);
+
+    const result = rows.filter(row => {
+      const country = row.location.split(',').pop().trim();
+      return continentMap[normalizedKey].includes(country);
+    });
+
+    res.json(result);
+  } catch (err) {
+    console.error('Error in /api/logs-by-continent:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Serve React App
 app.get('/*', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
