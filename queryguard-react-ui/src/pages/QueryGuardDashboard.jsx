@@ -24,6 +24,26 @@ export default function QueryGuardDashboard() {
   const [continentStats, setContinentStats] = useState({});
   const [hoveredContinent, setHoveredContinent] = useState(null);
   const [tooltip, setTooltip] = useState({ visible: false, text: '', x: 0, y: 0 });
+  const [activeContinent, setActiveContinent] = useState(null);
+  const [continentIps, setContinentIps] = useState([]);
+
+  const handleContinentClick = (continentKey) => {
+    if (continentKey === activeContinent) {
+      setActiveContinent(null);
+      setContinentIps([]);
+      return;
+    }
+
+    setActiveContinent(continentKey);
+
+    fetch(`/api/logs-by-continent?continent=${continentKey}`, { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => setContinentIps(data))
+      .catch(err => {
+        console.error('Error fetching continent IPs:', err);
+        setContinentIps([]);
+      });
+  };
 
   useEffect(() => {
     Promise.all([
@@ -172,6 +192,7 @@ export default function QueryGuardDashboard() {
                 <button
                   key={continent}
                   className={`sidebar-button btn-${continent}`}
+                  onClick={() => handleContinentClick(continent)}
                   onMouseEnter={() => setHoveredContinent(continent)}
                   onMouseLeave={() => setHoveredContinent(null)}
                 >
@@ -187,32 +208,27 @@ export default function QueryGuardDashboard() {
                   className="geo-image"
                 />
 
-
-
-{[
-  { x: 25, y: 39, key: 'north-america' },
-  { x: 36, y: 63, key: 'south-america' },
-  { x: 57, y: 32, key: 'europe' },
-  { x: 56, y: 54, key: 'africa' },
-  { x: 77, y: 29, key: 'asia' },
-  { x: 84, y: 67, key: 'australia' },
-  { x: 64, y: 96, key: 'antarctica' },
-].map((dot, i) => (
-  <div
-    key={i}
-    className={`geo-number ${hoveredContinent === dot.key ? 'highlight' : ''}`}
-    style={{
-      left: `${dot.x}%`,
-      top: `${dot.y}%`
-    }}
-  >
-    {continentStats[dot.key] ?? 0}%
-  </div>
-))}
-             
-
-
- </div>
+                {[ // overlay % labels
+                  { x: 25, y: 39, key: 'north-america' },
+                  { x: 36, y: 63, key: 'south-america' },
+                  { x: 57, y: 32, key: 'europe' },
+                  { x: 56, y: 54, key: 'africa' },
+                  { x: 77, y: 29, key: 'asia' },
+                  { x: 84, y: 67, key: 'australia' },
+                  { x: 64, y: 96, key: 'antarctica' },
+                ].map((dot, i) => (
+                  <div
+                    key={i}
+                    className={`geo-number ${hoveredContinent === dot.key ? 'highlight' : ''}`}
+                    style={{
+                      left: `${dot.x}%`,
+                      top: `${dot.y}%`
+                    }}
+                  >
+                    {continentStats[dot.key] ?? 0}%
+                  </div>
+                ))}
+              </div>
               {tooltip.visible && (
                 <div className="tooltip" style={{ left: tooltip.x, top: tooltip.y }}>
                   {tooltip.text}
@@ -220,6 +236,25 @@ export default function QueryGuardDashboard() {
               )}
             </div>
           </div>
+
+          {activeContinent && (
+            <div className="card geo-card">
+              <h2 className="card-title">
+                IPs from {activeContinent.replace('-', ' ').toUpperCase()}
+              </h2>
+              <ul className="card-list">
+                {continentIps.length > 0 ? (
+                  continentIps.map(({ ip, location }) => (
+                    <li key={ip}>
+                      <Link to={`/ip/${ip}`} className="card-link">{ip}</Link> – {location}
+                    </li>
+                  ))
+                ) : (
+                  <li>No logs found for this region.</li>
+                )}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
     </div>
