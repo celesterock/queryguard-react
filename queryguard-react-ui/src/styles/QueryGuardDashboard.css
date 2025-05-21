@@ -155,6 +155,7 @@ body {
 }
 
 
+
 .geo-container {
   position: relative;
 }
@@ -214,14 +215,15 @@ body {
 /* ----- Geo Map Overlay and Buttons ----- */
 .geo-inner {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: flex-start;
   gap: 2rem;
   width: 100%;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* prevents stacking */
 }
 
 .geo-buttons {
+  flex: 0 0 200px; /* fixed width */
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -229,19 +231,18 @@ body {
 }
 
 .geo-map-wrapper {
-  width: 100%;
-  max-width: 100%;
-  flex-grow: 1;
+  flex: 1; /* takes up remaining horizontal space */
+  position: relative;
+  display: flex;
+  justify-content: center; /* centers the image inside wrapper */
 }
-
 
 .geo-image {
-  width: 100%;
+  width: 90%;        /* scaled down to fit nicely beside buttons */
+  max-width: 1000px; /* limit overall width */
   height: auto;
-  max-width: none;
   display: block;
 }
-
 
 /* Overlay percentages on the map */
 .geo-number {
@@ -258,7 +259,7 @@ body {
 
 .geo-number.highlight {
   transform: translate(-50%, -50%) scale(1.3);
-  color: #d40b68;
+  color: #ffffff;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
 }
 
@@ -304,7 +305,9 @@ body {
     justify-content: center;
   }
 
-  .geo-number {
-    font-size: 1.4rem;
+  .geo-image {
+    width: 100%;
+    max-width: 100%;
   }
+
 }
