@@ -83,7 +83,7 @@ export default function AttacksPerDayChart({ data }) {
             angle={-35}
             textAnchor="end"
             height={60}
-            label={{ value: 'Date', position: 'insideBottom', offset: -25, fill: '#a0aec0' }}
+            label={{ value: 'Date', position: 'insideBottom', offset: -25, fill: '#ffffff' }}
           />
 	  <YAxis
 	   	stroke="#cbd5e0"
@@ -93,7 +93,7 @@ export default function AttacksPerDayChart({ data }) {
     		angle: -90,
     		position: 'outsideLeft',
     		offset: 15,
-    		fill: '#a0aec0',
+    		fill: '#ffffff',
     		fontSize: 12
   		}}
 	 />

@@ -20,14 +20,14 @@ export default function TopAttackerBarChart({ data }) {
           <XAxis
             type="number"
             stroke="#cbd5e0"
-            label={{ value: 'SQLi Count', position: 'insideBottom', offset: -5, fill: '#a0aec0' }}
+            label={{ value: 'SQLi Count', position: 'insideBottom', offset: -5, fill: '#ffffff' }}
           />
           <YAxis
             type="category"
             dataKey="ip"
             stroke="#cbd5e0"
             width={180}
-            label={{ value: 'IP Address', angle: 0, position: 'insideLeft', fill: '#a0aec0' }}
+            label={{ value: 'IP Address', angle: 0, position: 'insideLeft', fill: '#ffffff' }}
           />
           <Bar dataKey="count" barSize={18}>
             {data.map((entry, index) => (

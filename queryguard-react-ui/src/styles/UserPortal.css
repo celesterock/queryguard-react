@@ -66,6 +66,7 @@ nav a:hover {
 
 .button:hover {
   background-color: #38a169;
+  color: white;
 }
 
 footer {

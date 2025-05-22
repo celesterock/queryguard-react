@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { io } from 'socket.io-client';
 import logo from '../assets/logo_white.png';
 import continentsMap from '../assets/world_map.jpg';
 import '../styles/QueryGuardDashboard.css';
@@ -9,23 +10,21 @@ import TopAttackerBarChart from './TopAttackerBarChart';
 import AttacksByHourChart from './AttacksByHourChart';
 
 export default function QueryGuardDashboard() {
-  const [data, setData] = useState({
-    common: [],
-    recent: [],
-    ips: [],
-    endpoints: [],
-    sqliIps: []
-  });
-
+  const [data, setData] = useState({ common: [], recent: [], ips: [], endpoints: [], sqliIps: [] });
   const [attacksPerDayData, setAttacksPerDayData] = useState([]);
   const [attacksByHourData, setAttacksByHourData] = useState([]);
-  const [error, setError] = useState(null);
-
   const [continentStats, setContinentStats] = useState({});
   const [hoveredContinent, setHoveredContinent] = useState(null);
   const [tooltip, setTooltip] = useState({ visible: false, text: '', x: 0, y: 0 });
   const [activeContinent, setActiveContinent] = useState(null);
   const [continentIps, setContinentIps] = useState([]);
+  const [userId, setUserId] = useState(null);
+  const [showBanner, setShowBanner] = useState(false);
+
+  const triggerBanner = () => {
+    setShowBanner(true);
+    refreshDashboardData();
+  };
 
   const handleContinentClick = (continentKey) => {
     if (continentKey === activeContinent) {
@@ -33,76 +32,77 @@ export default function QueryGuardDashboard() {
       setContinentIps([]);
       return;
     }
-
     setActiveContinent(continentKey);
-
     fetch(`/api/logs-by-continent?continent=${continentKey}`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => setContinentIps(data))
-      .catch(err => {
-        console.error('Error fetching continent IPs:', err);
-        setContinentIps([]);
+      .catch(() => setContinentIps([]));
+  };
+
+  const refreshDashboardData = () => {
+    Promise.all([
+      fetch('/api/common-injections', { credentials: 'include' }).then(res => res.json()),
+      fetch('/api/recent-injections', { credentials: 'include' }).then(res => res.json()),
+      fetch('/api/most-recent-ips', { credentials: 'include' }).then(res => res.json()),
+      fetch('/api/top-attacked-endpoints', { credentials: 'include' }).then(res => res.json()),
+      fetch('/api/top-sqli-ips', { credentials: 'include' }).then(res => res.json())
+    ]).then(([common, recent, ips, endpoints, sqliIps]) => {
+      setData({
+        common: common.slice(0, 5).map(row => `${row.injection} (${row.count})`),
+        recent: recent.slice(0, 5).map(row => row.injection),
+        ips: ips.slice(0, 5),
+        endpoints: endpoints.slice(0, 5).map(row => ({ label: `${row.endpoint} (${row.count})`, raw: row.endpoint })),
+        sqliIps: sqliIps || []
       });
+    });
+
+    fetch('/api/chart/injections-per-day', { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        const grouped = {};
+        data.forEach(row => {
+          if (Number(row.prediction) === 1) {
+            const day = new Date(row.timestamp).toISOString().split('T')[0];
+            grouped[day] = (grouped[day] || 0) + 1;
+          }
+        });
+        setAttacksPerDayData(Object.entries(grouped).map(([date, count]) => ({ date, count })));
+      });
+
+    fetch('/api/injections-by-hour', { credentials: 'include' })
+      .then(res => res.json())
+      .then(setAttacksByHourData);
+
+    fetch('/api/continent-stats', { credentials: 'include' })
+      .then(res => res.json())
+      .then(setContinentStats);
   };
 
   useEffect(() => {
-    Promise.all([
-      fetch('http://3.149.254.38:3000/api/common-injections', { credentials: 'include' }).then(res => res.json()),
-      fetch('http://3.149.254.38:3000/api/recent-injections', { credentials: 'include' }).then(res => res.json()),
-      fetch('http://3.149.254.38:3000/api/most-recent-ips', { credentials: 'include' }).then(res => res.json()),
-      fetch('http://3.149.254.38:3000/api/top-attacked-endpoints', { credentials: 'include' }).then(res => res.json()),
-      fetch('http://3.149.254.38:3000/api/top-sqli-ips', { credentials: 'include' }).then(res => res.json())
-    ])
-      .then(([common, recent, ips, endpoints, sqliIps]) => {
-        setData({
-          common: common.slice(0, 5).map(row => {
-            const body = typeof row.injection === 'string'
-              ? row.injection
-              : JSON.stringify(row.injection);
-            return `${body} (${row.count})`;
-          }),
-          recent: recent.slice(0, 5).map(row => row.injection),
-          ips: ips.slice(0, 5),
-          endpoints: endpoints.slice(0, 5).map(row => ({
-            label: `${row.endpoint} (${row.count})`,
-            raw: row.endpoint
-          })),
-          sqliIps: sqliIps || []
-        });
-      })
-      .catch((err) => {
-        console.error('Dashboard data load failed:', err);
-        setError('Failed to load dashboard data.');
-      });
-
-    fetch('http://3.149.254.38:3000/api/chart/injections-per-day', { credentials: 'include' })
+    fetch('/me', { credentials: 'include' })
       .then(res => res.json())
-      .then(chartLogs => {
-        const attacksByDay = {};
-        chartLogs.forEach(row => {
-          if (Number(row.prediction) === 1) {
-            const day = new Date(row.timestamp).toISOString().split('T')[0];
-            attacksByDay[day] = (attacksByDay[day] || 0) + 1;
-          }
-        });
-
-        const attacksData = Object.entries(attacksByDay).map(([date, count]) => ({ date, count }));
-        setAttacksPerDayData(attacksData);
-      });
-
-    fetch('http://3.149.254.38:3000/api/injections-by-hour', { credentials: 'include' })
-      .then(res => res.json())
-      .then(hourData => setAttacksByHourData(hourData))
-      .catch(err => {
-        console.error('Error loading hourly data:', err.message);
-      });
-
-    fetch('http://3.149.254.38:3000/api/continent-stats', { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => setContinentStats(data))
-      .catch(err => console.error('Failed to load continent stats:', err));
-
+      .then(data => setUserId(data.userId));
   }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+    const socket = io('http://3.149.254.38:3000');
+    socket.on(`sqli:${userId}`, () => triggerBanner());
+    return () => socket.disconnect();
+  }, [userId]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setShowBanner(false), 5000);
+    return () => clearTimeout(timeout);
+  }, [showBanner]);
+
+  useEffect(() => { refreshDashboardData(); }, []);
+
+  const showTooltip = (e, text) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltip({ visible: true, text, x: e.clientX - rect.left + 10, y: e.clientY - rect.top + 10 });
+  };
+  const hideTooltip = () => setTooltip(t => ({ ...t, visible: false }));
 
   const dynamicCards = [
     {
@@ -131,36 +131,29 @@ export default function QueryGuardDashboard() {
     },
   ];
 
-  const showTooltip = (e, text) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setTooltip({
-      visible: true,
-      text,
-      x: e.clientX - rect.left + 10,
-      y: e.clientY - rect.top + 10,
-    });
-  };
-  const hideTooltip = () => setTooltip(t => ({ ...t, visible: false }));
-
   return (
     <div>
+      {showBanner && (
+        <div className="alert-banner">
+          <span>SQL Injection Detected</span>
+          <button onClick={() => setShowBanner(false)} className="banner-close">×</button>
+        </div>
+      )}
+
       <div className="dashboard-header">
         <img src={logo} alt="QueryGuard Logo" className="dashboard-logo" />
       </div>
-    <div className="dashboard-logout">
-      <button className="logout-button" onClick={() => {
-        fetch('/logout', {
-          method: 'POST',
-          credentials: 'include'
-        }).then(() => {
-          window.location.href = '/';
-        }).catch(err => {
-          console.error('Logout failed:', err);
-        });
-      }}>
-        Log Out
-      </button>
-    </div>
+
+      <div className="dashboard-logout">
+        <button className="logout-button" onClick={() => {
+          fetch('/logout', { method: 'POST', credentials: 'include' })
+            .then(() => { window.location.href = '/'; })
+            .catch(err => console.error('Logout failed:', err));
+        }}>
+          Log Out
+        </button>
+      </div>
+
       <div className="cards-container">
         {dynamicCards.map(card => (
           <div key={card.title} className="card">
@@ -196,7 +189,6 @@ export default function QueryGuardDashboard() {
           <AttacksByHourChart data={attacksByHourData} />
         </div>
 
-        {/* Map-based geo analytics */}
         <div className="card geo-card">
           <h2 className="card-title">Geographical Overview</h2>
           <div className="geo-inner">
@@ -215,28 +207,12 @@ export default function QueryGuardDashboard() {
             </div>
             <div className="geo-container" onMouseOut={hideTooltip}>
               <div className="geo-map-wrapper">
-                <img
-                  src={continentsMap}
-                  alt="7 Continents Map"
-                  className="geo-image"
-                />
-
-                {[ // overlay % labels
-                  { x: 25, y: 39, key: 'north-america' },
-                  { x: 36, y: 63, key: 'south-america' },
-                  { x: 57, y: 32, key: 'europe' },
-                  { x: 56, y: 54, key: 'africa' },
-                  { x: 77, y: 29, key: 'asia' },
-                  { x: 84, y: 67, key: 'australia' },
-                  { x: 64, y: 96, key: 'antarctica' },
-                ].map((dot, i) => (
+                <img src={continentsMap} alt="Continents Map" className="geo-image" />
+                {[{ x: 25, y: 39, key: 'north-america' }, { x: 36, y: 63, key: 'south-america' }, { x: 57, y: 32, key: 'europe' }, { x: 56, y: 54, key: 'africa' }, { x: 77, y: 29, key: 'asia' }, { x: 84, y: 67, key: 'australia' }, { x: 64, y: 96, key: 'antarctica' }].map((dot, i) => (
                   <div
                     key={i}
                     className={`geo-number ${hoveredContinent === dot.key ? 'highlight' : ''}`}
-                    style={{
-                      left: `${dot.x}%`,
-                      top: `${dot.y}%`
-                    }}
+                    style={{ left: `${dot.x}%`, top: `${dot.y}%` }}
                   >
                     {continentStats[dot.key] ?? 0}%
                   </div>

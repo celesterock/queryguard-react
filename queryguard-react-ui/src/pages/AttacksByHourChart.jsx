@@ -5,7 +5,7 @@ import {
 
 export default function SqliByHourChart({ data }) {
   return (
-    <div style={{ width: '100%', height: 400, padding: '1rem' }}>
+    <div style={{ width: '100%', height: 400, padding: '1rem', paddingBottom: '3rem' }}>
       <ResponsiveContainer>
         <BarChart
           data={data}
@@ -15,11 +15,16 @@ export default function SqliByHourChart({ data }) {
           <CartesianGrid strokeDasharray="3 3" stroke="#2d3748" />
           <XAxis
             dataKey="timeRange"
-            stroke="#cbd5e0"
             angle={-45}
             textAnchor="end"
             interval={0}
-            height={60}
+ tick={{ fill: '#ffffff', fontSize: 10 }}
+            label={{
+              value: "Hour of Day",
+              position: "insideBottom",
+              offset: -45,
+              style: { fill: '#ccc' }
+            }}
           />
           <YAxis
             type="number"
@@ -29,8 +34,8 @@ export default function SqliByHourChart({ data }) {
               value: 'SQLi Attempt Count',
               angle: -90,
               position: 'insideLeft',
-              fill: '#a0aec0',
-              offset: 10
+              fill: '#ffffff',
+              offset: -10
             }}
           />
           <Bar dataKey="count" fill="#63b3ed" barSize={20} />
@@ -39,3 +44,4 @@ export default function SqliByHourChart({ data }) {
     </div>
   );
 }
+
