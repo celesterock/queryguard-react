@@ -40,6 +40,20 @@ app.post('/login', async (req, res) => {
   }
 });
 
+// LOGOUT
+app.post('/logout', (req, res) => {
+  req.session.destroy(err => {
+    if (err) {
+      console.error('Logout failed:', err);
+      return res.status(500).json({ message: 'Logout failed' });
+    }
+    res.clearCookie('connect.sid'); // optional: clear session cookie
+    res.status(200).json({ message: 'Logged out' });
+  });
+});
+
+
+
 // REGISTER
 app.post('/register', async (req, res) => {
   const { username, password, registered_ip } = req.body;

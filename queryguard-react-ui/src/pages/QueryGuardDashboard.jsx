@@ -147,7 +147,20 @@ export default function QueryGuardDashboard() {
       <div className="dashboard-header">
         <img src={logo} alt="QueryGuard Logo" className="dashboard-logo" />
       </div>
-
+    <div className="dashboard-logout">
+      <button className="logout-button" onClick={() => {
+        fetch('/logout', {
+          method: 'POST',
+          credentials: 'include'
+        }).then(() => {
+          window.location.href = '/';
+        }).catch(err => {
+          console.error('Logout failed:', err);
+        });
+      }}>
+        Log Out
+      </button>
+    </div>
       <div className="cards-container">
         {dynamicCards.map(card => (
           <div key={card.title} className="card">

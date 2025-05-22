@@ -10,7 +10,23 @@ export default function UserPortal() {
       <header>
         <h1>QueryGuard</h1>
         <nav>
-	<Link to="/">Log Out</Link>
+<button
+  onClick={() => {
+    fetch('/logout', {
+      method: 'POST',
+      credentials: 'include'
+    })
+      .then(() => {
+        window.location.href = '/';
+      })
+      .catch(err => {
+        console.error('Logout failed:', err);
+      });
+  }}
+  className="logout-button"
+>
+  Log Out
+</button>
 
         </nav>
       </header>

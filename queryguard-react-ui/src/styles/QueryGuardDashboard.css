@@ -18,6 +18,30 @@ body {
   margin: 0 auto;
 }
 
+/* Logout Button */
+.dashboard-logout {
+  position: absolute;
+  top: 1.5rem;
+  right: 2rem;
+  z-index: 100;
+}
+
+.logout-button {
+  background-color: #e53e3e;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.logout-button:hover {
+  background-color: #c53030;
+}
+
+
 /* ----- Grid Layout ----- */
 .cards-container {
   display: grid;
