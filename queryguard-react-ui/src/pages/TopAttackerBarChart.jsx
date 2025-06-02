@@ -26,6 +26,7 @@ export default function TopAttackerBarChart({ data }) {
             type="category"
             dataKey="ip"
             stroke="#cbd5e0"
+            interval={0}
             width={180}
             label={{ value: 'IP Address', angle: 0, position: 'insideLeft', fill: '#ffffff' }}
           />
