@@ -1,4 +1,6 @@
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 const path = require('path');
 const session = require('express-session');
 const app = express();
@@ -172,6 +174,12 @@ app.post('/log', async (req, res) => {
       prediction,
       location
     ]);
+
+    if (prediction === 1) {
+      const io = req.app.get('io');
+      io.emit(`sqli:${userId}`, { timestamp: Date.now() });
+    }
+
 
     console.log(`Log inserted for user ${userId} (Client IP ${clientIp}, Visitor IP ${userIp}) → Prediction: ${prediction}`);
     res.status(200).json({ message: 'Log stored successfully', prediction });
@@ -480,11 +488,30 @@ app.get('/api/logs-by-continent', requireLogin, async (req, res) => {
   }
 });
 
+app.get('/me', (req, res) => {
+  if (!req.session.user_id) {
+    return res.status(401).json({ message: 'Not logged in' });
+  }
+  res.json({ userId: req.session.user_id });
+});
+
+
 // Serve React App
 app.get('/*', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
-app.listen(PORT, () => {
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: '*' }
+});
+
+app.set('io', io); // so you can access it from anywhere
+
+io.on('connection', (socket) => {
+  console.log('Socket connected:', socket.id);
+});
+
+server.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
 });

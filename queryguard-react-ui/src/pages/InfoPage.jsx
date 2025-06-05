@@ -102,40 +102,6 @@ const aboutus = [
   },
 ];
 
-const pricingPlans = [
-  {
-    icon: faUserShield,
-    title: "Premium",
-    description: [
-      "Most Recent IP Connections",
-      "Number of Attack Attempts per Day",
-      "Common IPs Attempting SQL Injections",
-      "Most Commonly Attacked Website Endpoints",
-    ],
-    price: "$15/month",
-  },
-  {
-    icon: faBug,
-    title: "Standard",
-    description: [
-      "Most Recent SQL injection attempt queries",
-      "Most Common SQL injection attempt queries",
-      "Most Recent IP Connections",
-      "Number of Attack Attempts per Day",
-    ],
-    price: "$8/month",
-  },
-  {
-    icon: faCode,
-    title: "Free",
-    description: [
-      "Most Recent SQL injection attempt queries",
-      "Most Common SQL injection attempt queries",
-    ],
-    price: "$0/month",
-  },
-];
-
 export default function InfoPage() {
   return (
     <div>
@@ -281,46 +247,40 @@ export default function InfoPage() {
       <div id="pricing" className="pricing-section">
         <h3 className="pricing-heading">Pricing</h3>
         <div className="pricing-grid pricing-grid-horizontal">
-          {pricingPlans.map((plan, idx) => (
-            <div className="pricing-flip-card" key={idx}>
-              <div className="pricing-flip-inner">
-                {/* FRONT SIDE */}
-                <div className="pricing-flip-front" key={idx}>
-                  <FontAwesomeIcon
-                    icon={plan.icon}
-                    size="2x"
-                    style={{
-                      backgroundColor: "transparent",
-                      marginBottom: "0.5rem",
-                      color: "#7393B3",
-                      height: "80px",
-                      width: "100px",
-                    }}
-                  />
-                  <h3 className="pricing-title">{plan.title}</h3>
-                  <h3 className="pricing-price">{plan.price}</h3>
-                </div>
-
-                {/* BACK SIDE */}
-                <div className="pricing-flip-back">
-                  <h2 className="pricing-features-heading">Features:</h2>
-                  <ul className="pricing-features">
-                    {plan.description.map((item, index) => (
-                      <li key={index} className="pricing-feature-item">
-                        ✅ {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+          <div className="pricing-content-wrapper">
+            <div className="pricing-left-box">
+              <FontAwesomeIcon
+                icon={faUserShield}
+                size="3x"
+                style={{
+                  backgroundColor: "transparent",
+                  marginBottom: "0.5rem",
+                  color: "#7393B3",
+                  height: "80px",
+                  width: "100px",
+                }}
+              />
+              <h3 className="pricing-price">$15 / month</h3>
+              <h4> Real-time protection with Advanced SQL detection </h4>
             </div>
-          ))}
+            <div className="pricing-right-content">
+              <h3 className="pricing-title">Premium Features</h3>
+              <ul className="pricing-feature-list">
+                <li>Most Recent SQL injection attempt queries</li>
+                <li>Most Common SQL injection attempt queries</li>
+                <li>Most recent and common IPs attempting SQL Injection</li>
+                <li>Top attacking IPs and endpoints</li>
+                <li>Daily Attack count</li>
+                <li>Most Recent IP Connections</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
       <div id="contact" className="contact-container">
         <h2 className="contact-heading">Contact Us</h2>
         <h3>
-          Email: <strong>QueryGuardians@gmail.com</strong>
+          Email: <strong>queryguardians@gmail.com</strong>
         </h3>
         <h3>University of California Irvine, CA</h3>
 
