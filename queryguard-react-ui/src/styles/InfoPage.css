@@ -88,7 +88,7 @@ body {
   height: 200px;
 }
 
-/* Responsive support (optional) */
+/* Responsive */
 @media (max-width: 768px) {
   .pricing-content-wrapper {
     flex-direction: column;
@@ -160,7 +160,7 @@ body {
 .team-img {
   width: 100px;
   height: 125px;
-  border-radius: 50%; /* makes it round */
+  border-radius: 50%; /* round */
   object-fit: cover;
   margin-bottom: 1rem;
 }
