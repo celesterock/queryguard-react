@@ -123,10 +123,9 @@ body {
   color: #e2e8f0;
   text-align: center;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  scrollbar-width: thin;           /* Firefox: make scrollbar smaller */
+  scrollbar-width: thin;         
 }
 
-/* Optional: style scrollbar in WebKit browsers */
 .card-list li::-webkit-scrollbar {
   width: 4px;
 }
