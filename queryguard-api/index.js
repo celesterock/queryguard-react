@@ -11,13 +11,15 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
+// session management for logged-in users
 app.use(session({
   secret: 'queryguard-secret-key',
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false } // secure: true for HTTPS
+  cookie: { secure: false }
 }));
 
+// serves front end
 const distPath = path.resolve(__dirname, '../queryguard-react-ui/dist');
 app.use(express.static(distPath));
 
@@ -42,21 +44,21 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// LOGOUT
+// LOGOUT - ends session & clears cookies
 app.post('/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) {
       console.error('Logout failed:', err);
       return res.status(500).json({ message: 'Logout failed' });
     }
-    res.clearCookie('connect.sid'); // optional: clear session cookie
+    res.clearCookie('connect.sid');
     res.status(200).json({ message: 'Logged out' });
   });
 });
 
 
 
-// REGISTER
+// REGISTER - creates a new username, password, ip & inserts into database
 app.post('/register', async (req, res) => {
   const { username, password, registered_ip } = req.body;
   try {
@@ -75,9 +77,7 @@ app.post('/register', async (req, res) => {
 });
 
 
-/**
- * Normalize IP address format.
- */
+// Normalize IP address format & formats localhost
 function normalizeIp(ip) {
   if (!ip) return 'unknown';
   if (ip.startsWith('::ffff:')) return ip.replace('::ffff:', '');
@@ -85,9 +85,7 @@ function normalizeIp(ip) {
   return ip;
 }
 
-/**
- * Get location (city, region, country) from IP address.
- */
+// Returns location given an IP (city, region, country)
 async function getLocationFromIp(ip) {
   try {
     const { data } = await axios.get(`http://ip-api.com/json/${ip}`);
@@ -101,9 +99,8 @@ async function getLocationFromIp(ip) {
 }
 
 
-
 /**
- * Parse request body and return the first field that the model flags as malicious.
+ * Parses request body and returns the first field that the model flags as malicious.
  * Returns { value, prediction } where prediction is 0 or 1.
  */
 async function extractMaliciousField(body) {
@@ -112,11 +109,12 @@ async function extractMaliciousField(body) {
   for (const [key, value] of Object.entries(body)) {
     if (typeof value === 'string' && value.trim() !== '') {
       try {
+        // communication with BERT model
         const { data } = await axios.post('http://localhost:8000/predict', {
           query: value,
         });
 
-        const modelPrediction = data.prediction; // Expecting 0 or 1
+        const modelPrediction = data.prediction;
         if (modelPrediction === 1) {
           return { value, prediction: 1 };
         }
@@ -129,18 +127,19 @@ async function extractMaliciousField(body) {
   return { value: '', prediction: 0 };
 }
 
-/**
- * Log endpoint that receives web requests from client sites.
- */
+// Log endpoint that receives web requests from client sites.
+// Info is sent here from Middleware
 app.post('/log', async (req, res) => {
   const { method, endpoint, ip: userIpRaw, timestamp, body, headers } = req.body;
 
-  // Get client IP from the actual connection — this is the IP of the site sending the log
+  // Get client IP from the connection
   const clientIp = normalizeIp(req.headers['x-forwarded-for'] || req.socket.remoteAddress);
-  const userIp = normalizeIp(userIpRaw); // This is the end user’s IP that the site reported
+
+  // This is the end user’s IP that is making requests on the client's site
+  const userIp = normalizeIp(userIpRaw);
 
   try {
-    // Look up which user sent this based on their registered server IP
+    // Look up which QG Client sent this based on their registered server IP
     const userResult = await pool.query(
       'SELECT id FROM users WHERE registered_ip = $1 LIMIT 1',
       [clientIp]
@@ -156,7 +155,7 @@ app.post('/log', async (req, res) => {
     // Run BERT model prediction on all fields in body
     const { value: maliciousInput, prediction } = await extractMaliciousField(body);
 
-    // location lookup
+    // lookup location
     const location = await getLocationFromIp(userIp);
 
     // Insert the log
@@ -175,6 +174,7 @@ app.post('/log', async (req, res) => {
       location
     ]);
 
+    // send a real time alert from server to QG Dashboard if SQLi detected
     if (prediction === 1) {
       const io = req.app.get('io');
       io.emit(`sqli:${userId}`, { timestamp: Date.now() });
@@ -191,7 +191,7 @@ app.post('/log', async (req, res) => {
 });
 
 
-// DASHBOARD API: Only for logged-in user
+// require logged-in user for Dashboard access
 function requireLogin(req, res, next) {
   if (!req.session.user_id) {
     return res.status(401).json({ message: 'Not logged in' });
@@ -199,7 +199,7 @@ function requireLogin(req, res, next) {
   next();
 }
 
-// Common Injections
+// Common Injections: Counts the frequency of each injection query
 app.get('/api/common-injections', requireLogin, async (req, res) => {
   try {
     const { rows } = await pool.query(`
@@ -222,6 +222,7 @@ app.get('/api/common-injections', requireLogin, async (req, res) => {
   }
 });
 
+// Returns the most recent injection queries enter into client's site
 app.get('/api/recent-injections', requireLogin, async (req, res) => {
   try {
     const { rows } = await pool.query(`
@@ -235,7 +236,7 @@ app.get('/api/recent-injections', requireLogin, async (req, res) => {
     res.json(rows.map(row => ({
       injection: typeof row.request_body === 'string'
         ? row.request_body
-        : JSON.stringify(row.request_body), // 🛠 force stringify if it's an object
+        : JSON.stringify(row.request_body),
       timestamp: row.timestamp,
     })));
   } catch (err) {
@@ -244,9 +245,7 @@ app.get('/api/recent-injections', requireLogin, async (req, res) => {
   }
 });
 
-
-
-// Most Recent IPs
+// Returns ANY most Recent IPs connecting to client site (NOT just malicious)
 app.get('/api/most-recent-ips', requireLogin, async (req, res) => {
   try {
     const { rows } = await pool.query(`
@@ -268,7 +267,7 @@ app.get('/api/most-recent-ips', requireLogin, async (req, res) => {
   }
 });
 
-
+// Returns the client's site endpoints that have logged an attack attempt
 app.get('/api/top-attacked-endpoints', requireLogin, async (req, res) => {
   try {
     const { rows } = await pool.query(`
@@ -292,6 +291,7 @@ app.get('/api/top-attacked-endpoints', requireLogin, async (req, res) => {
   }
 });
 
+// returns all log data for aq given IP address 
 app.get('/api/logs-by-ip', requireLogin, async (req, res) => {
   const ip = req.query.ip;
 
@@ -311,6 +311,7 @@ app.get('/api/logs-by-ip', requireLogin, async (req, res) => {
   }
 });
 
+// returns all log data for a given endpoint
 app.get('/api/logs-by-endpoint', requireLogin, async (req, res) => {
   const endpoint = req.query.path;
 
@@ -330,7 +331,7 @@ app.get('/api/logs-by-endpoint', requireLogin, async (req, res) => {
   }
 });
 
-// endpoint for chart of injections per day
+// returns injections per day data for daily/weekly chart
 app.get('/api/chart/injections-per-day', requireLogin, async (req, res) => {
   try {
     const { rows } = await pool.query(`
@@ -351,7 +352,7 @@ app.get('/api/chart/injections-per-day', requireLogin, async (req, res) => {
   }
 });
 
-// Chart for top 10 most active attacking ips
+// Returns top 10 most active attacking ips
 app.get('/api/top-sqli-ips', requireLogin, async (req, res) => {
   try {
     const { rows } = await pool.query(`
@@ -373,7 +374,7 @@ app.get('/api/top-sqli-ips', requireLogin, async (req, res) => {
   }
 });
 
-// return sql injections by the hour
+// Returns sql injections by the hour for Dashboard chart
 app.get('/api/injections-by-hour', requireLogin, async (req, res) => {
   try {
     const { rows } = await pool.query(`
@@ -401,6 +402,7 @@ app.get('/api/injections-by-hour', requireLogin, async (req, res) => {
   }
 });
 
+// Maps a continent to a list of countries
 const continentMap = {
   'North America': ['United States', 'Canada', 'Mexico'],
   'South America': ['Brazil', 'Argentina', 'Chile', 'Colombia'],
@@ -411,6 +413,7 @@ const continentMap = {
   'Antarctica': ['Antarctica']
 };
 
+// Returns the percent of attacks coming from each country
 app.get('/api/continent-stats', requireLogin, async (req, res) => {
   try {
     const result = await pool.query(
@@ -432,7 +435,7 @@ app.get('/api/continent-stats', requireLogin, async (req, res) => {
 
     for (let row of result.rows) {
       if (!row.location) continue;
-      const match = row.location.split(',').pop().trim(); // Get country from end
+      const match = row.location.split(',').pop().trim();
       for (let [continent, countries] of Object.entries(continentMap)) {
         if (countries.includes(match)) {
           const key = continent.toLowerCase().replace(' ', '-');
@@ -455,11 +458,9 @@ app.get('/api/continent-stats', requireLogin, async (req, res) => {
   }
 });
 
-
+// Returns the list of attacking IPs and specific locations for each continent
 app.get('/api/logs-by-continent', requireLogin, async (req, res) => {
   const { continent } = req.query;
-
-  // Match lowercase-dashed continent keys to your camel case keys
   const normalizedKey = Object.keys(continentMap).find(
     key => key.toLowerCase().replace(/\s+/g, '-') === continent
   );
@@ -488,6 +489,7 @@ app.get('/api/logs-by-continent', requireLogin, async (req, res) => {
   }
 });
 
+// Returns user id if the user is actively logged in
 app.get('/me', (req, res) => {
   if (!req.session.user_id) {
     return res.status(401).json({ message: 'Not logged in' });
@@ -501,12 +503,13 @@ app.get('/*', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
+// Creates Socket.IO server for real-time notifications from server -> dashboard
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: '*' }
 });
 
-app.set('io', io); // so you can access it from anywhere
+app.set('io', io); 
 
 io.on('connection', (socket) => {
   console.log('Socket connected:', socket.id);
