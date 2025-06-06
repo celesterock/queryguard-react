@@ -6,7 +6,7 @@ import {
 
 function getWeekStart(dateStr) {
   const date = new Date(dateStr);
-  const day = date.getDay(); // 0 (Sun) to 6 (Sat)
+  const day = date.getDay(); // Sun = 0 -> Sat = 6
   const diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust to Monday
   const monday = new Date(date.setDate(diff));
   return monday.toISOString().split('T')[0]; // 'YYYY-MM-DD'
@@ -22,7 +22,7 @@ export default function AttacksPerDayChart({ data }) {
 
     const weekly = {};
     data.forEach(({ date, count }) => {
-      const weekStart = getWeekStart(date); // new logic
+      const weekStart = getWeekStart(date);
       weekly[weekStart] = (weekly[weekStart] || 0) + count;
     });
 
