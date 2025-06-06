@@ -22,10 +22,10 @@ export default function LoginPage() {
       });
 
       if (response.ok) {
-        console.log('✅ Login successful! Session established.');
+        console.log('Login successful! Session established.');
         navigate('/portal');
       } else {
-        console.warn('❌ Login failed.');
+        console.warn('Login failed.');
         setError('Invalid username or password.');
       }
     } catch (err) {
